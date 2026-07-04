@@ -1,117 +1,575 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "updated": "2026-07-04",
-  "note": "Sumber kebenaran diagnosa ESP. Diedit di sini; aplikasi membacanya saat runtime. Level: -3=turun tajam .. +3=naik tajam. pace: sudden|gradual|any.",
-
+  "note": "Sumber kebenaran diagnosa ESP (dwibahasa EN/ID). narasi/rekomendasi = {en,id}.",
   "trendThresholds": {
-    "sharpUp": 20, "up": 8, "mildUp": 2, "mildDown": -2, "down": -8, "sharpDown": -20
+    "sharpUp": 20,
+    "up": 8,
+    "mildUp": 2,
+    "mildDown": -2,
+    "down": -8,
+    "sharpDown": -20
   },
   "signalThresholds": {
-    "cvHigh": 0.12, "zcSpikey": 0.35, "zcEratic": 0.55, "cvSmooth": 0.05
+    "cvHigh": 0.12,
+    "zcSpikey": 0.35,
+    "zcEratic": 0.55,
+    "cvSmooth": 0.05
   },
   "freqCompensation": {
     "triggerPct": 2,
-    "normalize": { "dP": "Hz2", "Q": "Hz", "Amps": "Hz" }
+    "normalize": {
+      "dP": "Hz2",
+      "Q": "Hz",
+      "Amps": "Hz"
+    }
   },
-  "paceHeuristic": { "suddenMaxHours": 12, "gradualMinHours": 48, "gatingFactor": 0.4 },
-
+  "paceHeuristic": {
+    "suddenMaxHours": 12,
+    "gradualMinHours": 48,
+    "gatingFactor": 0.4
+  },
   "aliases": {
-    "q": "Q", "rate": "Q", "bfpd": "Q", "bpd": "Q", "flow": "Q", "liquidrate": "Q",
-    "pip": "Pi", "pi": "Pi", "intake": "Pi", "pintake": "Pi", "intakepressure": "Pi", "pumpintakepressure": "Pi",
-    "pdp": "Pd", "pd": "Pd", "discharge": "Pd", "pdischarge": "Pd", "dischargepressure": "Pd",
-    "dp": "dP", "deltap": "dP", "dppump": "dP", "pumpdifferential": "dP",
-    "ti": "Ti", "fluidtemp": "Ti", "intaketemp": "Ti", "intaketemperature": "Ti",
-    "tm": "Tm", "tmotor": "Tm", "motortemp": "Tm", "motortemperature": "Tm", "motorwinding": "Tm", "mwt": "Tm",
-    "vib": "Vib", "vibration": "Vib",
-    "amps": "Amps", "current": "Amps", "ra": "Amps", "averageamps": "Amps", "motorcurrent": "Amps",
-    "thp": "THP", "whp": "THP", "wellhead": "THP", "wellheadpressure": "THP", "tubinghead": "THP", "tubingheadpressure": "THP",
-    "chp": "CHP", "casing": "CHP", "casingpressure": "CHP", "casingheadpressure": "CHP", "annulus": "CHP",
-    "hz": "Freq", "freq": "Freq", "frequency": "Freq", "drivefrequency": "Freq"
+    "q": "Q",
+    "rate": "Q",
+    "bfpd": "Q",
+    "bpd": "Q",
+    "flow": "Q",
+    "liquidrate": "Q",
+    "pip": "Pi",
+    "pi": "Pi",
+    "intake": "Pi",
+    "pintake": "Pi",
+    "intakepressure": "Pi",
+    "pumpintakepressure": "Pi",
+    "pdp": "Pd",
+    "pd": "Pd",
+    "discharge": "Pd",
+    "pdischarge": "Pd",
+    "dischargepressure": "Pd",
+    "dp": "dP",
+    "deltap": "dP",
+    "dppump": "dP",
+    "pumpdifferential": "dP",
+    "ti": "Ti",
+    "fluidtemp": "Ti",
+    "intaketemp": "Ti",
+    "intaketemperature": "Ti",
+    "tm": "Tm",
+    "tmotor": "Tm",
+    "motortemp": "Tm",
+    "motortemperature": "Tm",
+    "motorwinding": "Tm",
+    "mwt": "Tm",
+    "vib": "Vib",
+    "vibration": "Vib",
+    "amps": "Amps",
+    "current": "Amps",
+    "ra": "Amps",
+    "averageamps": "Amps",
+    "motorcurrent": "Amps",
+    "thp": "THP",
+    "whp": "THP",
+    "wellhead": "THP",
+    "wellheadpressure": "THP",
+    "tubinghead": "THP",
+    "tubingheadpressure": "THP",
+    "chp": "CHP",
+    "casing": "CHP",
+    "casingpressure": "CHP",
+    "casingheadpressure": "CHP",
+    "annulus": "CHP",
+    "hz": "Freq",
+    "freq": "Freq",
+    "frequency": "Freq",
+    "drivefrequency": "Freq"
   },
-
   "levels": {
-    "naik tajam": 3, "melonjak": 3, "naik drastis": 3,
+    "naik tajam": 3,
+    "melonjak": 3,
+    "sharp rise": 3,
+    "spike up": 3,
     "naik": 2,
-    "naik landai": 1, "naik perlahan": 1, "naik bertahap": 1,
-    "steady": 0, "datar": 0, "stabil": 0, "konstan": 0, "flat": 0,
-    "turun landai": -1, "turun perlahan": -1, "menurun bertahap": -1,
+    "rise": 2,
+    "increase": 2,
+    "naik landai": 1,
+    "naik perlahan": 1,
+    "mild rise": 1,
+    "steady": 0,
+    "datar": 0,
+    "stabil": 0,
+    "flat": 0,
+    "turun landai": -1,
+    "turun perlahan": -1,
+    "mild decline": -1,
     "turun": -2,
-    "turun tajam": -3, "anjlok": -3, "jatuh": -3
+    "decline": -2,
+    "decrease": -2,
+    "turun tajam": -3,
+    "anjlok": -3,
+    "sharp drop": -3,
+    "collapse": -3,
+    "creep up": 1
   },
-  "levelLabels": { "3": "↑↑ naik tajam", "2": "↑ naik", "1": "↗ naik landai", "0": "→ steady", "-1": "↘ turun landai", "-2": "↓ turun", "-3": "↓↓ turun tajam" },
-  "levelGlyph": { "3": "↑↑", "2": "↑", "1": "↗", "0": "→", "-1": "↘", "-2": "↓", "-3": "↓↓" },
-
-  "params": ["Q", "THP", "Amps", "Pd", "Pi", "dP", "Ti", "Tm", "Vib", "Freq", "CHP"],
+  "levelLabels": {
+    "en": {
+      "3": "↑↑ sharp rise",
+      "2": "↑ rise",
+      "1": "↗ mild rise",
+      "0": "→ steady",
+      "-1": "↘ mild decline",
+      "-2": "↓ decline",
+      "-3": "↓↓ sharp drop"
+    },
+    "id": {
+      "3": "↑↑ naik tajam",
+      "2": "↑ naik",
+      "1": "↗ naik landai",
+      "0": "→ steady",
+      "-1": "↘ turun landai",
+      "-2": "↓ turun",
+      "-3": "↓↓ turun tajam"
+    }
+  },
+  "levelLabelsEn": {
+    "3": "↑↑ sharp rise",
+    "2": "↑ rise",
+    "1": "↗ mild rise",
+    "0": "→ steady",
+    "-1": "↘ mild decline",
+    "-2": "↓ decline",
+    "-3": "↓↓ sharp drop"
+  },
+  "levelGlyph": {
+    "3": "↑↑",
+    "2": "↑",
+    "1": "↗",
+    "0": "→",
+    "-1": "↘",
+    "-2": "↓",
+    "-3": "↓↓"
+  },
+  "params": [
+    "Q",
+    "THP",
+    "Amps",
+    "Pd",
+    "Pi",
+    "dP",
+    "Ti",
+    "Tm",
+    "Vib",
+    "Freq",
+    "CHP"
+  ],
   "paramLabels": {
-    "Q": "Flow Rate", "THP": "Wellhead Pressure", "Amps": "Motor Current", "Pd": "Discharge Pressure",
-    "Pi": "Intake Pressure", "dP": "Pump Differential", "Ti": "Intake Temp", "Tm": "Motor Temp",
-    "Vib": "Vibration", "Freq": "Drive Frequency", "CHP": "Casing Pressure"
+    "Q": "Flow Rate",
+    "THP": "Wellhead Pressure",
+    "Amps": "Motor Current",
+    "Pd": "Discharge Pressure",
+    "Pi": "Intake Pressure",
+    "dP": "Pump Differential",
+    "Ti": "Intake Temp",
+    "Tm": "Motor Temp",
+    "Vib": "Vibration",
+    "Freq": "Drive Frequency",
+    "CHP": "Casing Pressure"
   },
-
+  "paramLabelsId": {
+    "Q": "Laju Alir",
+    "THP": "Tekanan Wellhead",
+    "Amps": "Arus Motor",
+    "Pd": "Tekanan Discharge",
+    "Pi": "Tekanan Intake",
+    "dP": "Beda Tekanan Pompa",
+    "Ti": "Temp Intake",
+    "Tm": "Temp Motor",
+    "Vib": "Vibrasi",
+    "Freq": "Frekuensi Drive",
+    "CHP": "Tekanan Casing"
+  },
   "signatures": [
-    { "id": "A1", "name": "Broken Shaft", "nameId": "Poros Patah", "pace": "sudden",
-      "t": { "Q": -2, "THP": -2, "Amps": -3, "Pd": -2, "Pi": 2, "dP": -3, "Tm": 1 }, "key": ["Amps", "dP"], "trip": "underload",
-      "narasi": "Poros patah: pompa berhenti mengangkat meski motor berputar tanpa beban. Amps anjlok tajam (TRIP), dP kolaps, Pd turun, Pi naik (drawdown hilang), Tm merangkak naik karena kehilangan pendinginan.",
-      "rekomendasi": "Hentikan restart berulang. Konfirmasi via Amps drop mendadak + dP kolaps. Siapkan pull & inspect (DIFA) untuk periksa poros & kopling." },
-
-    { "id": "A2", "name": "Hole in Tubing", "nameId": "Kebocoran Tubing", "pace": "any",
-      "t": { "Q": -1, "THP": -1, "Amps": 0, "Pd": -1, "Pi": 0, "dP": -1, "Tm": 1 }, "key": ["Tm"], "trip": "by_TM",
-      "narasi": "Fluida bocor balik ke annulus: Q & WHP turun perlahan, Amps ~tetap, Pd & dP menurun. Tm naik landai hingga batas maksimum → trip by TM (sensor TM mematikan ESP, RA jatuh ke nol).",
-      "rekomendasi": "Cek penyebab trip apakah by-TM. Uji tekanan tubing / tubing integrity. Bandingkan rate permukaan vs downhole untuk konfirmasi kebocoran." },
-
-    { "id": "A3", "name": "Blockage at Pump Intake", "nameId": "Sumbatan Intake Pompa", "pace": "any",
-      "t": { "Q": -1, "THP": -1, "Amps": -1, "Pd": -1, "Pi": -1, "dP": -1, "Tm": 1 }, "key": ["Pi", "Tm"],
-      "narasi": "Aliran masuk terhambat: semua parameter aliran turun perlahan. Ciri khas Pi menurun + Tm naik (pendinginan berkurang).",
-      "rekomendasi": "Cek kemungkinan scale/sand/debris di intake screen. Evaluasi riwayat solids produksi. Pertimbangkan flush/treatment." },
-
-    { "id": "A4", "name": "Blockage at Perforations", "nameId": "Sumbatan Perforasi", "pace": "any",
-      "t": { "Q": -3, "THP": 0, "Amps": 0, "Pd": 0, "Pi": -1, "dP": 1, "Tm": 1 }, "key": ["Q", "Pi"],
-      "narasi": "Inflow reservoir tersumbat di perforasi: Q turun paling tajam, Pi ikut turun (reservoir tak bisa memasok). Parameter permukaan relatif datar.",
-      "rekomendasi": "Cek skin/damage perforasi. Evaluasi kandidat stimulasi/acidizing. Bandingkan dengan riwayat PI sumur." },
-
-    { "id": "A5", "name": "Increase in Watercut", "nameId": "Kenaikan Water Cut", "pace": "gradual",
-      "t": { "Q": -1, "THP": -1, "Amps": 1, "Pd": 1, "Pi": 1, "dP": -1, "Tm": 1 }, "key": ["Pd"],
-      "narasi": "Kadar air naik → fluida lebih berat (densitas naik) → Pd naik, Amps & Tm naik karena beban bertambah, produksi total cenderung turun. Berkembang perlahan.",
-      "rekomendasi": "Cek tren water cut & salinitas. Evaluasi sumber air (coning/breakthrough). Tinjau ulang desain lift terhadap SG fluida baru." },
-
-    { "id": "A6", "name": "Shut In at Surface", "nameId": "Sumur Ditutup di Permukaan", "pace": "sudden",
-      "t": { "Q": -2, "THP": 3, "Amps": -2, "Pd": 3, "Pi": 2, "dP": 3, "Tm": 1 }, "key": ["THP", "Pd", "dP"], "trip": "overload",
-      "narasi": "Choke/valve permukaan tertutup → pompa melawan sistem tertutup. WHP, Pd, dP melonjak serempak (TRIP). Q anjlok, Amps turun.",
-      "rekomendasi": "Verifikasi status choke/valve permukaan & separator. Ini biasanya operasional, bukan kegagalan downhole." },
-
-    { "id": "A7", "name": "Blockage in Pump Stages", "nameId": "Sumbatan Stage Pompa", "pace": "any",
-      "t": { "Q": -1, "THP": -1, "Amps": 0, "Pd": 1, "Pi": 1, "dP": -1, "Tm": 1 }, "key": ["Amps"], "signal": "spikey",
-      "narasi": "Scale/padatan menyumbat stage → Amps spikey (fluktuasi tajam). Pd & Pi sedikit naik, dP menurun (efisiensi turun), Tm naik.",
-      "rekomendasi": "Cek scale/solids. Bedakan dari wearing lewat karakter Amps (spikey vs smooth). Pertimbangkan treatment kimia." },
-
-    { "id": "A8", "name": "Increase in Reservoir Pressure", "nameId": "Kenaikan Tekanan Reservoir", "pace": "gradual",
-      "t": { "Q": 1, "THP": 1, "Amps": 0, "Pd": 1, "Pi": 1, "dP": -1, "Tm": -1 }, "key": ["Q"],
-      "narasi": "Dorongan reservoir menguat → Q, WHP, Pi, Pd naik. dP turun (Pi naik lebih besar), Tm turun (pendinginan bertambah). Salah satu dari sedikit case tren positif.",
-      "rekomendasi": "Konfirmasi via kenaikan Q & Pi. Biasanya menguntungkan; tinjau apakah pompa masih di rentang operasi optimal." },
-
-    { "id": "A9", "name": "Free Gas at Pump Intake", "nameId": "Gas Bebas di Intake", "pace": "any",
-      "t": { "Q": -1, "THP": -1, "Amps": -1, "Pd": -1, "Pi": 1, "dP": -1, "Tm": -1 }, "key": ["Amps", "Pi"], "signal": "eratic", "trip": "underload",
-      "narasi": "Gas bebas masuk intake → Amps & Pi menjadi eratic (tidak beraturan) = gas interference/gas locking. Parameter lain cenderung turun. Amps saat gas-locked cenderung rendah (memompa fluida ringan).",
-      "rekomendasi": "Turunkan frekuensi / naikkan submergence untuk mengeluarkan gas. Uji keberhasilan: dP/Hz² harus pulih. Bila tidak pulih, penyebab kemungkinan mekanis, bukan gas." },
-
-    { "id": "A10", "name": "Wearing Stages", "nameId": "Keausan Stage Pompa", "pace": "gradual",
-      "t": { "Q": -1, "THP": -1, "Amps": 1, "Pd": -1, "Pi": 0, "dP": -1, "Tm": 1 }, "key": ["dP"], "signal": "smooth", "trip": "over_or_under",
-      "narasi": "Keausan bertahap → kemampuan head menurun → dP turun landai (penanda utama), produksi menurun. Amps naik smooth (beda dari spikey). Berkembang jangka panjang; trip bisa overload/underload.",
-      "rekomendasi": "Bandingkan dP aktual (ternormalisasi Hz²) terhadap pump curve. Bila ada Pi stabil sambil dP turun → wear. Siapkan evaluasi pull & DIFA." },
-
-    { "id": "A11", "name": "Increase in Frequency", "nameId": "Kenaikan Frekuensi (Aksi Operator)", "pace": "any", "operator": true,
-      "t": { "Q": 2, "THP": 1, "Amps": 2, "Pd": 1, "Pi": -2, "dP": 1, "Tm": 1 }, "key": ["Amps", "Tm"],
-      "narasi": "Menaikkan frekuensi VSD → hampir semua parameter naik (Q, WHP, Amps, Pd, dP). Pi turun (drawdown bertambah). Aksi operator disengaja, bukan kegagalan.",
-      "rekomendasi": "Cek log setpoint VSD. Bila perubahan Freq terkonfirmasi, ini bukan anomali. Gunakan nilai ternormalisasi Hz untuk menilai kondisi riil." },
-
-    { "id": "A12", "name": "Open Choke", "nameId": "Choke Dibuka (Aksi Operator)", "pace": "any", "operator": true,
-      "t": { "Q": 2, "THP": -2, "Amps": 0, "Pd": -1, "Pi": -1, "dP": -1, "Tm": 0 }, "key": ["THP"],
-      "narasi": "Membuka choke → WHP turun (penanda utama), Q naik. Pd/Pi/dP turun (resistansi berkurang), Amps & Tm relatif stabil. Aksi operator normal.",
-      "rekomendasi": "Cek log choke permukaan. Bila terkonfirmasi, bukan kegagalan." },
-
-    { "id": "PUMPOFF", "name": "Pump-off / Reservoir Decline", "nameId": "Pump-off / Penurunan Inflow", "pace": "gradual",
-      "t": { "Q": -2, "THP": -1, "Amps": -2, "Pd": -1, "Pi": -2, "dP": -1, "Tm": 1 }, "key": ["Pi", "Amps"],
-      "narasi": "Inflow reservoir menurun (depletion / fluid level turun / drawdown berlebih): Pi merosot konsisten, beban pompa (Amps/Hz) makin ringan → bergerak ke pump-off. Operator sering menaikkan frekuensi untuk kompensasi hingga mentok. Pembeda dari wear: di sini Pi ikut turun; pada wear Pi stabil.",
-      "rekomendasi": "Cek rate produksi, water cut, fluid level. Pastikan proteksi underload aktif. Bila inflow turun permanen, pertimbangkan downsize pompa saat workover berikutnya. Hindari operasi berulang di zona pump-off." }
+    {
+      "id": "A1",
+      "name": "Broken Shaft",
+      "nameId": "Poros Patah",
+      "pace": "sudden",
+      "t": {
+        "Q": -2,
+        "THP": -2,
+        "Amps": -3,
+        "Pd": -2,
+        "Pi": 2,
+        "dP": -3,
+        "Tm": 1
+      },
+      "key": [
+        "Amps",
+        "dP"
+      ],
+      "trip": "underload",
+      "narasi": {
+        "en": "Broken shaft: the pump stops lifting while the motor spins unloaded. Amps collapse sharply (TRIP), dP collapses, Pd falls, Pi rises (drawdown lost), Tm creeps up from loss of cooling.",
+        "id": "Poros patah: pompa berhenti mengangkat meski motor berputar tanpa beban. Amps anjlok tajam (TRIP), dP kolaps, Pd turun, Pi naik (drawdown hilang), Tm merangkak naik karena kehilangan pendinginan."
+      },
+      "narasi_en": "Broken shaft: the pump stops lifting while the motor spins unloaded. Amps collapse (TRIP), dP collapses, Pd falls, Pi rises (drawdown lost), Tm climbs as cooling flow is lost.",
+      "rekomendasi": {
+        "en": "Stop repeated restarts. Confirm via sudden Amps drop + dP collapse. Plan pull & inspect (DIFA) to check shaft & coupling.",
+        "id": "Hentikan restart berulang. Konfirmasi via Amps drop mendadak + dP kolaps. Siapkan pull & inspect (DIFA) untuk periksa poros & kopling."
+      },
+      "rekomendasi_en": "Stop repeated restarts. Confirm via sudden Amps drop + dP collapse. Prepare pull & inspect (DIFA) to check shaft & coupling."
+    },
+    {
+      "id": "A2",
+      "name": "Hole in Tubing",
+      "nameId": "Kebocoran Tubing",
+      "pace": "any",
+      "t": {
+        "Q": -1,
+        "THP": -1,
+        "Amps": 0,
+        "Pd": -1,
+        "Pi": 0,
+        "dP": -1,
+        "Tm": 1
+      },
+      "key": [
+        "Tm"
+      ],
+      "trip": "by_TM",
+      "narasi": {
+        "en": "Fluid leaks back into the annulus: Q & WHP decline slowly, Amps ~flat, Pd & dP fall. Tm creeps up to its maximum limit -> trip by TM (the TM sensor shuts the ESP down, RA drops to zero).",
+        "id": "Fluida bocor balik ke annulus: Q & WHP turun perlahan, Amps ~tetap, Pd & dP menurun. Tm naik landai hingga batas maksimum -> trip by TM (sensor TM mematikan ESP, RA jatuh ke nol)."
+      },
+      "narasi_en": "Fluid leaks back to the annulus: Q & WHP fall slowly, Amps ~steady, Pd & dP decline. Tm rises gently to its max limit -> trip by TM (the TM sensor shuts down the ESP, RA drops to zero).",
+      "rekomendasi": {
+        "en": "Check whether trip cause is by-TM. Run a tubing integrity / pressure test. Compare surface vs downhole rate to confirm the leak.",
+        "id": "Cek penyebab trip apakah by-TM. Uji tekanan tubing / tubing integrity. Bandingkan rate permukaan vs downhole untuk konfirmasi kebocoran."
+      },
+      "rekomendasi_en": "Check whether the trip is by-TM. Run a tubing pressure / integrity test. Compare surface vs downhole rate to confirm the leak."
+    },
+    {
+      "id": "A3",
+      "name": "Blockage at Pump Intake",
+      "nameId": "Sumbatan Intake Pompa",
+      "pace": "any",
+      "t": {
+        "Q": -1,
+        "THP": -1,
+        "Amps": -1,
+        "Pd": -1,
+        "Pi": -1,
+        "dP": -1,
+        "Tm": 1
+      },
+      "key": [
+        "Pi",
+        "Tm"
+      ],
+      "narasi": {
+        "en": "Inflow into the pump is restricted: all flow parameters decline slowly. Signature: Pi falls + Tm rises (reduced cooling).",
+        "id": "Aliran masuk terhambat: semua parameter aliran turun perlahan. Ciri khas Pi menurun + Tm naik (pendinginan berkurang)."
+      },
+      "narasi_en": "Restricted inflow: all flow parameters decline slowly. Hallmark is falling Pi + rising Tm (reduced cooling).",
+      "rekomendasi": {
+        "en": "Check for scale/sand/debris on the intake screen. Review solids production history. Consider flush/treatment.",
+        "id": "Cek kemungkinan scale/sand/debris di intake screen. Evaluasi riwayat solids produksi. Pertimbangkan flush/treatment."
+      },
+      "rekomendasi_en": "Check for scale/sand/debris at the intake screen. Review solids production history. Consider a flush/treatment."
+    },
+    {
+      "id": "A4",
+      "name": "Blockage at Perforations",
+      "nameId": "Sumbatan Perforasi",
+      "pace": "any",
+      "t": {
+        "Q": -3,
+        "THP": 0,
+        "Amps": 0,
+        "Pd": 0,
+        "Pi": -1,
+        "dP": 1,
+        "Tm": 1
+      },
+      "key": [
+        "Q",
+        "Pi"
+      ],
+      "narasi": {
+        "en": "Reservoir inflow is blocked at the perforations: Q drops the steepest of all cases, Pi also falls (reservoir can't supply). Surface parameters stay relatively flat.",
+        "id": "Inflow reservoir tersumbat di perforasi: Q turun paling tajam, Pi ikut turun (reservoir tak bisa memasok). Parameter permukaan relatif datar."
+      },
+      "narasi_en": "Reservoir inflow blocked at the perforations: Q drops the steepest, Pi also falls (the reservoir cannot supply). Surface parameters stay relatively flat.",
+      "rekomendasi": {
+        "en": "Check perforation skin/damage. Evaluate stimulation/acidizing candidacy. Compare with the well's PI history.",
+        "id": "Cek skin/damage perforasi. Evaluasi kandidat stimulasi/acidizing. Bandingkan dengan riwayat PI sumur."
+      },
+      "rekomendasi_en": "Check perforation skin/damage. Evaluate stimulation/acidizing candidacy. Compare against the well's PI history."
+    },
+    {
+      "id": "A5",
+      "name": "Increase in Watercut",
+      "nameId": "Kenaikan Water Cut",
+      "pace": "gradual",
+      "t": {
+        "Q": -1,
+        "THP": -1,
+        "Amps": 1,
+        "Pd": 1,
+        "Pi": 1,
+        "dP": -1,
+        "Tm": 1
+      },
+      "key": [
+        "Pd"
+      ],
+      "narasi": {
+        "en": "Rising water cut makes the fluid heavier (higher density) -> Pd rises, Amps & Tm rise as load grows, total production tends to fall. Develops slowly.",
+        "id": "Kadar air naik -> fluida lebih berat (densitas naik) -> Pd naik, Amps & Tm naik karena beban bertambah, produksi total cenderung turun. Berkembang perlahan."
+      },
+      "narasi_en": "Rising water cut -> heavier fluid (higher density) -> Pd rises, Amps & Tm rise from the added load, total production tends to fall. Develops slowly.",
+      "rekomendasi": {
+        "en": "Check water cut & salinity trend. Evaluate water source (coning/breakthrough). Re-review lift design against the new fluid SG.",
+        "id": "Cek tren water cut & salinitas. Evaluasi sumber air (coning/breakthrough). Tinjau ulang desain lift terhadap SG fluida baru."
+      },
+      "rekomendasi_en": "Check water cut & salinity trends. Investigate the water source (coning/breakthrough). Re-check lift design against the new fluid SG."
+    },
+    {
+      "id": "A6",
+      "name": "Shut In at Surface",
+      "nameId": "Sumur Ditutup di Permukaan",
+      "pace": "sudden",
+      "t": {
+        "Q": -2,
+        "THP": 3,
+        "Amps": -2,
+        "Pd": 3,
+        "Pi": 2,
+        "dP": 3,
+        "Tm": 1
+      },
+      "key": [
+        "THP",
+        "Pd",
+        "dP"
+      ],
+      "trip": "overload",
+      "narasi": {
+        "en": "A surface choke/valve is closed -> the pump works against a closed system. WHP, Pd, dP spike together (TRIP). Q collapses, Amps fall.",
+        "id": "Choke/valve permukaan tertutup -> pompa melawan sistem tertutup. WHP, Pd, dP melonjak serempak (TRIP). Q anjlok, Amps turun."
+      },
+      "narasi_en": "Surface choke/valve closed -> the pump works against a closed system. WHP, Pd, dP spike together (TRIP). Q collapses, Amps fall.",
+      "rekomendasi": {
+        "en": "Verify surface choke/valve & separator status. This is usually operational, not a downhole failure.",
+        "id": "Verifikasi status choke/valve permukaan & separator. Ini biasanya operasional, bukan kegagalan downhole."
+      },
+      "rekomendasi_en": "Verify surface choke/valve & separator status. This is usually operational, not a downhole failure."
+    },
+    {
+      "id": "A7",
+      "name": "Blockage in Pump Stages",
+      "nameId": "Sumbatan Stage Pompa",
+      "pace": "any",
+      "t": {
+        "Q": -1,
+        "THP": -1,
+        "Amps": 0,
+        "Pd": 1,
+        "Pi": 1,
+        "dP": -1,
+        "Tm": 1
+      },
+      "key": [
+        "Amps"
+      ],
+      "signal": "spikey",
+      "narasi": {
+        "en": "Scale/solids clog the stages -> Amps become spikey (sharp fluctuations). Pd & Pi rise slightly, dP falls (efficiency drops), Tm rises.",
+        "id": "Scale/padatan menyumbat stage -> Amps spikey (fluktuasi tajam). Pd & Pi sedikit naik, dP menurun (efisiensi turun), Tm naik."
+      },
+      "narasi_en": "Scale/solids clog the stages -> Amps go spikey (sharp fluctuation). Pd & Pi rise slightly, dP falls (lower efficiency), Tm rises.",
+      "rekomendasi": {
+        "en": "Check scale/solids. Distinguish from wearing via Amps character (spikey vs smooth). Consider chemical treatment.",
+        "id": "Cek scale/solids. Bedakan dari wearing lewat karakter Amps (spikey vs smooth). Pertimbangkan treatment kimia."
+      },
+      "rekomendasi_en": "Check for scale/solids. Distinguish from wear via Amps character (spikey vs smooth). Consider chemical treatment."
+    },
+    {
+      "id": "A8",
+      "name": "Increase in Reservoir Pressure",
+      "nameId": "Kenaikan Tekanan Reservoir",
+      "pace": "gradual",
+      "t": {
+        "Q": 1,
+        "THP": 1,
+        "Amps": 0,
+        "Pd": 1,
+        "Pi": 1,
+        "dP": -1,
+        "Tm": -1
+      },
+      "key": [
+        "Q"
+      ],
+      "narasi": {
+        "en": "Reservoir drive strengthens -> Q, WHP, Pi, Pd rise. dP falls (Pi rises more), Tm falls (more cooling). One of the few cases with a positive trend.",
+        "id": "Dorongan reservoir menguat -> Q, WHP, Pi, Pd naik. dP turun (Pi naik lebih besar), Tm turun (pendinginan bertambah). Salah satu dari sedikit case tren positif."
+      },
+      "narasi_en": "Stronger reservoir drive -> Q, WHP, Pi, Pd rise. dP falls (Pi rises more), Tm falls (more cooling). One of the few positive-trend cases.",
+      "rekomendasi": {
+        "en": "Confirm via rising Q & Pi. Usually favourable; review whether the pump is still in its optimal operating range.",
+        "id": "Konfirmasi via kenaikan Q & Pi. Biasanya menguntungkan; tinjau apakah pompa masih di rentang operasi optimal."
+      },
+      "rekomendasi_en": "Confirm via rising Q & Pi. Usually favorable; check the pump is still within its optimal operating range."
+    },
+    {
+      "id": "A9",
+      "name": "Free Gas at Pump Intake",
+      "nameId": "Gas Bebas di Intake",
+      "pace": "any",
+      "t": {
+        "Q": -1,
+        "THP": -1,
+        "Amps": -1,
+        "Pd": -1,
+        "Pi": 1,
+        "dP": -1,
+        "Tm": -1
+      },
+      "key": [
+        "Amps",
+        "Pi"
+      ],
+      "signal": "eratic",
+      "trip": "underload",
+      "narasi": {
+        "en": "Free gas enters the intake -> Amps & Pi become erratic (irregular) = gas interference/gas locking. Other parameters tend to fall. When gas-locked, Amps run low (pumping light fluid).",
+        "id": "Gas bebas masuk intake -> Amps & Pi menjadi eratic (tidak beraturan) = gas interference/gas locking. Parameter lain cenderung turun. Amps saat gas-locked cenderung rendah (memompa fluida ringan)."
+      },
+      "narasi_en": "Free gas enters the intake -> Amps & Pi become eratic (irregular) = gas interference/gas locking. Other parameters tend to fall. During gas lock Amps tend to be low (pumping light fluid).",
+      "rekomendasi": {
+        "en": "Lower frequency / raise submergence to clear the gas. Success test: dP/Hz2 should recover. If it doesn't, the cause is likely mechanical, not gas.",
+        "id": "Turunkan frekuensi / naikkan submergence untuk mengeluarkan gas. Uji keberhasilan: dP/Hz2 harus pulih. Bila tidak pulih, penyebab kemungkinan mekanis, bukan gas."
+      },
+      "rekomendasi_en": "Lower frequency / raise submergence to clear the gas. Success test: dP/Hz2 should recover. If it does not recover, the cause is likely mechanical, not gas."
+    },
+    {
+      "id": "A10",
+      "name": "Wearing Stages",
+      "nameId": "Keausan Stage Pompa",
+      "pace": "gradual",
+      "t": {
+        "Q": -1,
+        "THP": -1,
+        "Amps": 1,
+        "Pd": -1,
+        "Pi": 0,
+        "dP": -1,
+        "Tm": 1
+      },
+      "key": [
+        "dP"
+      ],
+      "signal": "smooth",
+      "trip": "over_or_under",
+      "narasi": {
+        "en": "Gradual wear -> the pump's head capacity declines -> dP falls mildly (primary marker), production drops. Amps rise smoothly (unlike spikey). Develops long-term; trip may be overload or underload.",
+        "id": "Keausan bertahap -> kemampuan head menurun -> dP turun landai (penanda utama), produksi menurun. Amps naik smooth (beda dari spikey). Berkembang jangka panjang; trip bisa overload/underload."
+      },
+      "narasi_en": "Gradual wear -> head-generating ability declines -> dP falls gently (primary indicator), production drops. Amps rise smoothly (unlike spikey). Long-term development; trip can be overload or underload.",
+      "rekomendasi": {
+        "en": "Compare actual dP (Hz2-normalized) against the pump curve. If Pi is stable while dP falls -> wear. Plan pull & DIFA evaluation.",
+        "id": "Bandingkan dP aktual (ternormalisasi Hz2) terhadap pump curve. Bila ada Pi stabil sambil dP turun -> wear. Siapkan evaluasi pull & DIFA."
+      },
+      "rekomendasi_en": "Compare actual dP (Hz2-normalized) against the pump curve. If Pi is stable while dP falls -> wear. Prepare a pull & DIFA evaluation."
+    },
+    {
+      "id": "A11",
+      "name": "Increase in Frequency",
+      "nameId": "Kenaikan Frekuensi (Aksi Operator)",
+      "pace": "any",
+      "operator": true,
+      "t": {
+        "Q": 2,
+        "THP": 1,
+        "Amps": 2,
+        "Pd": 1,
+        "Pi": -2,
+        "dP": 1,
+        "Tm": 1
+      },
+      "key": [
+        "Amps",
+        "Tm"
+      ],
+      "narasi": {
+        "en": "Raising the VSD frequency -> almost all parameters rise (Q, WHP, Amps, Pd, dP). Pi falls (more drawdown). A deliberate operator action, not a failure.",
+        "id": "Menaikkan frekuensi VSD -> hampir semua parameter naik (Q, WHP, Amps, Pd, dP). Pi turun (drawdown bertambah). Aksi operator disengaja, bukan kegagalan."
+      },
+      "narasi_en": "Raising the VSD frequency -> almost all parameters rise (Q, WHP, Amps, Pd, dP). Pi falls (more drawdown). A deliberate operator action, not a failure.",
+      "rekomendasi": {
+        "en": "Check the VSD setpoint log. If the Freq change is confirmed, this is not an anomaly. Use Hz-normalized values to judge the real condition.",
+        "id": "Cek log setpoint VSD. Bila perubahan Freq terkonfirmasi, ini bukan anomali. Gunakan nilai ternormalisasi Hz untuk menilai kondisi riil."
+      },
+      "rekomendasi_en": "Check the VSD setpoint log. If the Freq change is confirmed, this is not an anomaly. Use Hz-normalized values to assess the true condition."
+    },
+    {
+      "id": "A12",
+      "name": "Open Choke",
+      "nameId": "Choke Dibuka (Aksi Operator)",
+      "pace": "any",
+      "operator": true,
+      "t": {
+        "Q": 2,
+        "THP": -2,
+        "Amps": 0,
+        "Pd": -1,
+        "Pi": -1,
+        "dP": -1,
+        "Tm": 0
+      },
+      "key": [
+        "THP"
+      ],
+      "narasi": {
+        "en": "Opening the choke -> WHP falls (primary marker), Q rises. Pd/Pi/dP fall (less resistance), Amps & Tm stay relatively stable. A normal operator action.",
+        "id": "Membuka choke -> WHP turun (penanda utama), Q naik. Pd/Pi/dP turun (resistansi berkurang), Amps & Tm relatif stabil. Aksi operator normal."
+      },
+      "narasi_en": "Opening the choke -> WHP falls (primary indicator), Q rises. Pd/Pi/dP fall (less system resistance), Amps & Tm stay relatively stable. A normal operator action.",
+      "rekomendasi": {
+        "en": "Check the surface choke log. If confirmed, it is not a failure.",
+        "id": "Cek log choke permukaan. Bila terkonfirmasi, bukan kegagalan."
+      },
+      "rekomendasi_en": "Check the surface choke log. If confirmed, this is not a failure."
+    },
+    {
+      "id": "PUMPOFF",
+      "name": "Pump-off / Reservoir Decline",
+      "nameId": "Pump-off / Penurunan Inflow",
+      "pace": "gradual",
+      "t": {
+        "Q": -2,
+        "THP": -1,
+        "Amps": -2,
+        "Pd": -1,
+        "Pi": -2,
+        "dP": -1,
+        "Tm": 1
+      },
+      "key": [
+        "Pi",
+        "Amps"
+      ],
+      "narasi": {
+        "en": "Reservoir inflow declines (depletion / falling fluid level / excessive drawdown): Pi drops consistently, pump load (Amps/Hz) grows lighter -> moving toward pump-off. Operators often raise frequency to compensate until maxed out. Distinguishing from wear: here Pi also falls; with wear Pi stays stable.",
+        "id": "Inflow reservoir menurun (depletion / fluid level turun / drawdown berlebih): Pi merosot konsisten, beban pompa (Amps/Hz) makin ringan -> bergerak ke pump-off. Operator sering menaikkan frekuensi untuk kompensasi hingga mentok. Pembeda dari wear: di sini Pi ikut turun; pada wear Pi stabil."
+      },
+      "narasi_en": "Declining reservoir inflow (depletion / falling fluid level / excessive drawdown): Pi drops consistently, pump load (Amps/Hz) gets lighter -> heading toward pump-off. Operators often raise frequency to compensate until maxed out. Differentiator from wear: here Pi also falls; in wear Pi stays stable.",
+      "rekomendasi": {
+        "en": "Check production rate, water cut, fluid level. Ensure underload protection is active. If inflow decline is permanent, consider downsizing the pump at the next workover. Avoid repeated operation in the pump-off zone.",
+        "id": "Cek rate produksi, water cut, fluid level. Pastikan proteksi underload aktif. Bila inflow turun permanen, pertimbangkan downsize pompa saat workover berikutnya. Hindari operasi berulang di zona pump-off."
+      },
+      "rekomendasi_en": "Check production rate, water cut, fluid level. Ensure underload protection is active. If the inflow decline is permanent, consider downsizing the pump at the next workover. Avoid repeated operation in the pump-off zone."
+    }
   ]
 }

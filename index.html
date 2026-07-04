@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ESP Diagnosa — Fault Signature Analyzer</title>
+<title>ESP Diagnostics — Fault Signature Analyzer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -27,8 +27,6 @@ html,body{margin:0;background:
   color:var(--ink); font-family:var(--body); line-height:1.5; -webkit-font-smoothing:antialiased}
 a{color:var(--amber)}
 .wrap{max-width:1080px; margin:0 auto; padding:26px 20px 80px}
-
-/* Header */
 header{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap;
   border-bottom:1px solid var(--line); padding-bottom:18px; margin-bottom:24px}
 .brand{display:flex; align-items:center; gap:14px}
@@ -37,21 +35,20 @@ header{display:flex; align-items:flex-end; justify-content:space-between; gap:16
 .mark svg{width:26px;height:26px}
 h1{font-family:var(--disp); font-weight:700; font-size:22px; letter-spacing:-.01em; margin:0}
 .sub{color:var(--muted); font-size:12.5px; margin-top:2px; font-family:var(--mono); letter-spacing:.02em}
+.head-right{display:flex; flex-direction:column; align-items:flex-end; gap:10px}
+.lang{display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden}
+.lang button{background:transparent; color:var(--muted); border:none; padding:6px 13px; font-family:var(--mono); font-size:12px; cursor:pointer; letter-spacing:.03em}
+.lang button.on{background:var(--amber); color:#10202b; font-weight:700}
 .status{font-family:var(--mono); font-size:11.5px; text-align:right; color:var(--muted)}
 .status b{color:var(--teal)} .status .bad{color:var(--crit)}
-
-/* Tabs */
 .tabs{display:flex; gap:6px; margin-bottom:16px}
 .tab{font-family:var(--disp); font-weight:600; font-size:14px; padding:10px 18px; cursor:pointer;
   color:var(--muted); background:transparent; border:1px solid var(--line); border-radius:9px; transition:.15s}
 .tab:hover{color:var(--ink); border-color:var(--line2)}
 .tab.on{color:#10202b; background:var(--amber); border-color:var(--amber)}
-
 .panel{background:linear-gradient(180deg,var(--panel),var(--bg2)); border:1px solid var(--line);
   border-radius:14px; padding:22px; box-shadow:var(--shadow)}
 .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); margin:0 0 10px}
-
-/* Dropzone */
 .drop{border:1.5px dashed var(--line2); border-radius:12px; padding:38px 20px; text-align:center; cursor:pointer;
   transition:.18s; background:rgba(255,255,255,.012)}
 .drop:hover,.drop.hot{border-color:var(--amber); background:rgba(242,169,59,.06)}
@@ -59,8 +56,6 @@ h1{font-family:var(--disp); font-weight:700; font-size:22px; letter-spacing:-.01
 .drop p{color:var(--muted); font-size:13px; margin:0}
 .drop .ic{font-size:30px; color:var(--amber)}
 .hint{color:var(--faint); font-size:11.5px; font-family:var(--mono); margin-top:14px}
-
-/* Manual form */
 .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px}
 .field label{display:block; font-size:12px; color:var(--muted); margin-bottom:5px; font-family:var(--mono)}
 .field label b{color:var(--ink); font-weight:600}
@@ -78,8 +73,6 @@ select:focus{outline:none; border-color:var(--amber)}
 .btn-primary:hover{filter:brightness(1.06)}
 .btn-ghost{background:transparent; color:var(--muted); border-color:var(--line)}
 .actions{display:flex; gap:10px; margin-top:18px; align-items:center; flex-wrap:wrap}
-
-/* Signature strip */
 .strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(96px,1fr)); gap:8px; margin:4px 0 6px}
 .tile{background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:11px 8px; text-align:center}
 .tile .pn{font-family:var(--mono); font-size:10.5px; color:var(--muted); letter-spacing:.05em}
@@ -87,19 +80,13 @@ select:focus{outline:none; border-color:var(--amber)}
 .tile .dv{font-family:var(--mono); font-size:10px; color:var(--faint)}
 .tile.rise .gl{color:var(--rise)} .tile.fall .gl{color:var(--fall)} .tile.steady .gl{color:var(--steady)}
 .tile.na{opacity:.4} .tile.na .gl{color:var(--faint); font-size:15px}
-.badge{display:inline-block; font-family:var(--mono); font-size:10px; padding:2px 7px; border-radius:20px; margin-left:6px; vertical-align:middle}
-.b-sig{background:rgba(242,169,59,.14); color:var(--amber); border:1px solid rgba(242,169,59,.3)}
-.b-trip{background:rgba(229,84,75,.14); color:var(--crit); border:1px solid rgba(229,84,75,.32)}
-.b-norm{background:rgba(63,182,168,.13); color:var(--teal); border:1px solid rgba(63,182,168,.3)}
-
-/* Result */
 .result{margin-top:20px; display:none}
 .diag-head{display:flex; align-items:baseline; justify-content:space-between; gap:14px; flex-wrap:wrap}
 .diag-name{font-family:var(--disp); font-size:24px; font-weight:700; letter-spacing:-.01em}
 .conf{font-family:var(--mono); font-size:12px; padding:5px 12px; border-radius:20px}
-.conf.tinggi{background:rgba(63,182,168,.15); color:var(--teal)}
-.conf.sedang{background:rgba(242,169,59,.15); color:var(--amber)}
-.conf.rendah{background:rgba(232,137,74,.15); color:var(--warn)}
+.conf.hi{background:rgba(63,182,168,.15); color:var(--teal)}
+.conf.md{background:rgba(242,169,59,.15); color:var(--amber)}
+.conf.lo{background:rgba(232,137,74,.15); color:var(--warn)}
 .score-bar{height:7px; background:var(--panel2); border-radius:6px; overflow:hidden; margin:12px 0 4px}
 .score-bar>i{display:block; height:100%; background:linear-gradient(90deg,var(--amber),var(--teal))}
 .cands{margin-top:16px; display:flex; flex-direction:column; gap:7px}
@@ -138,57 +125,59 @@ canvas{margin-top:8px}
         </svg>
       </div>
       <div>
-        <h1>ESP Diagnosa</h1>
-        <div class="sub">fault-signature analyzer · artificial lift</div>
+        <h1 id="t-title">ESP Diagnostics</h1>
+        <div class="sub" id="t-sub">fault-signature analyzer · artificial lift</div>
       </div>
     </div>
-    <div class="status" id="status">memuat katalog…</div>
+    <div class="head-right">
+      <div class="lang" id="langToggle">
+        <button data-lang="en" class="on">EN</button>
+        <button data-lang="id">ID</button>
+      </div>
+      <div class="status" id="status">loading catalog…</div>
+    </div>
   </header>
 
   <div class="tabs">
-    <button class="tab on" data-tab="csv">Unggah CSV</button>
-    <button class="tab" data-tab="manual">Input Tren Manual</button>
+    <button class="tab on" data-tab="csv" id="t-tabcsv">Upload CSV</button>
+    <button class="tab" data-tab="manual" id="t-tabmanual">Manual Trend Input</button>
   </div>
 
-  <!-- CSV -->
   <section id="tab-csv" class="panel">
-    <p class="eyebrow">Sumber data · time-series sensor</p>
+    <p class="eyebrow" id="t-eyebrowcsv">Data source · sensor time-series</p>
     <div class="drop" id="drop">
       <div class="ic">↧</div>
-      <h3>Lepas file CSV di sini</h3>
-      <p>atau klik untuk memilih · kolom bebas (PIP, Intake Pressure, Amps, …) dikenali otomatis</p>
+      <h3 id="t-droptitle">Drop your CSV here</h3>
+      <p id="t-dropsub">or click to choose · any column names (PIP, Intake Pressure, Amps, …) auto-detected</p>
       <input type="file" id="file" accept=".csv" class="hidden">
-      <div class="hint">butuh minimal beberapa parameter · timestamp opsional tapi disarankan</div>
+      <div class="hint" id="t-drophint">needs at least a few parameters · timestamp optional but recommended</div>
     </div>
     <div class="err hidden" id="csvErr"></div>
   </section>
 
-  <!-- Manual -->
   <section id="tab-manual" class="panel hidden">
-    <p class="eyebrow">Input arah tren · untuk data tidak lengkap</p>
+    <p class="eyebrow" id="t-eyebrowmanual">Trend direction input · for incomplete data</p>
     <div class="grid" id="manualGrid"></div>
     <div class="pace-row">
-      <span style="font-size:12px;color:var(--muted);font-family:var(--mono)">Skala waktu tren:</span>
+      <span style="font-size:12px;color:var(--muted);font-family:var(--mono)" id="t-pacelabel">Trend time scale:</span>
       <div class="seg" id="paceSeg">
-        <button data-pace="sudden">Mendadak (menit–jam)</button>
-        <button data-pace="gradual" class="on">Gradual (hari–bulan)</button>
-        <button data-pace="any">Tidak yakin</button>
+        <button data-pace="sudden" id="t-pacesudden">Sudden (min–hours)</button>
+        <button data-pace="gradual" class="on" id="t-pacegradual">Gradual (days–months)</button>
+        <button data-pace="any" id="t-paceany">Not sure</button>
       </div>
     </div>
     <div class="actions">
-      <button class="btn btn-primary" id="runManual">Jalankan diagnosa</button>
+      <button class="btn btn-primary" id="runManual">Run diagnosis</button>
       <button class="btn btn-ghost" id="resetManual">Reset</button>
     </div>
   </section>
 
-  <!-- Result -->
   <section id="result" class="result panel">
-    <p class="eyebrow" id="resultSrc">Diagnosa</p>
+    <p class="eyebrow" id="resultSrc">Diagnosis</p>
     <div id="stripWrap" class="sec" style="margin-top:2px">
-      <h4>Signature — arah tren terbaca</h4>
+      <h4 id="t-sighead">Signature — detected trend direction</h4>
       <div class="strip" id="strip"></div>
     </div>
-
     <div class="sec">
       <div class="diag-head">
         <span class="diag-name" id="topName">—</span>
@@ -197,34 +186,28 @@ canvas{margin-top:8px}
       <div class="score-bar"><i id="topBar" style="width:0%"></i></div>
       <div style="font-family:var(--mono);font-size:11px;color:var(--muted)" id="topScore"></div>
     </div>
-
     <div class="sec">
-      <h4>Kandidat lain</h4>
+      <h4 id="t-candshead">Other candidates</h4>
       <div class="cands" id="cands"></div>
     </div>
-
     <div class="sec" id="evWrap">
-      <h4>Bukti</h4>
+      <h4 id="t-evhead">Evidence</h4>
       <div id="evidence"></div>
     </div>
-
     <div class="sec">
-      <h4>Interpretasi</h4>
+      <h4 id="t-interphead">Interpretation</h4>
       <div class="prose" id="interp"></div>
     </div>
-
     <div class="sec">
-      <h4>Rekomendasi tindakan</h4>
+      <h4 id="t-recohead">Recommended action</h4>
       <div class="prose" id="reco"></div>
     </div>
-
     <div class="sec" id="notesWrap">
-      <h4>Catatan</h4>
+      <h4 id="t-noteshead">Notes</h4>
       <div id="notes"></div>
     </div>
-
     <div class="sec hidden" id="chartWrap">
-      <h4>Tren parameter (dinormalisasi min–max untuk perbandingan bentuk)</h4>
+      <h4 id="t-charthead">Parameter trend (min–max normalized for shape comparison)</h4>
       <canvas id="chart" height="150"></canvas>
     </div>
   </section>
@@ -234,91 +217,158 @@ canvas{margin-top:8px}
 
 <script>
 "use strict";
-let CFG=null, chart=null;
+let CFG=null, chart=null, LANG='en', LAST=null;
 
-/* ---------- Load signatures.json (single source of truth) ---------- */
+/* ---------- i18n dictionary (UI strings) ---------- */
+const T={
+  en:{ title:"ESP Diagnostics", sub:"fault-signature analyzer · artificial lift",
+    tabcsv:"Upload CSV", tabmanual:"Manual Trend Input",
+    eyebrowcsv:"Data source · sensor time-series", droptitle:"Drop your CSV here",
+    dropsub:"or click to choose · any column names (PIP, Intake Pressure, Amps, …) auto-detected",
+    drophint:"needs at least a few parameters · timestamp optional but recommended",
+    eyebrowmanual:"Trend direction input · for incomplete data", pacelabel:"Trend time scale:",
+    pacesudden:"Sudden (min–hours)", pacegradual:"Gradual (days–months)", paceany:"Not sure",
+    run:"Run diagnosis", reset:"Reset", sighead:"Signature — detected trend direction",
+    candshead:"Other candidates", evhead:"Evidence", interphead:"Interpretation",
+    recohead:"Recommended action", noteshead:"Notes",
+    charthead:"Parameter trend (min–max normalized for shape comparison)",
+    confidence:"confidence", hi:"high", md:"medium", lo:"low", score:"score",
+    signalNormal:"signal: normal", diagnosis:"Diagnosis", manualSrc:"Diagnosis · manual input",
+    activePoints:"active points", range:"range", hours:"h", days:"d",
+    matchesSig:"matches signature", deviates:"deviates from expected",
+    signalMatch:"on Amps/Pi — matches the characteristic signature",
+    catalog:"catalog", cases:"cases", loadFail:"catalog not loaded",
+    loadManual:"load signatures.json manually", jsonInvalid:"invalid JSON",
+    minParams:"Fill at least 2 parameters to diagnose.",
+    csvEmpty:"CSV is empty.", noCols:"No recognizable ESP parameter columns. Check the headers.",
+    tooFew:"Too little active data (Freq>0) to analyze.",
+    catalogNotLoaded:"signatures.json is not loaded yet.",
+    readFail:"Failed to read CSV: ", gatedTag:"↓ time mismatch", gatedNote:"(suppressed by gating)",
+    noteOperator:"This case is an <b>operator action</b>, not a failure. Verify the VSD/choke setpoint log before acting.",
+    noteTrip:"Case includes a <b>TRIP</b> (RA→0). Identify the cause: {c} — check the VSD log.",
+    noteGated:"<b>{n}</b> scored high on direction ({r}%) but was <b>suppressed</b>: its time scale is <i>{p}</i>, which doesn't match the observed <i>{o}</i> trend.",
+    noteMissing:"Key parameters unavailable: <b>{k}</b>. Adding them would sharpen the diagnosis; confidence is adjusted accordingly.",
+    noteFreq:"Frequency changed {d}% within the window — parameters were <b>Hz-normalized</b> (affinity law) before assessment. Tiles marked show normalized trends.",
+    noteFrozen:"Sensor <b>{c}</b> looks frozen/flat (almost no variation) — likely faulty; not used as evidence.",
+    noNotes:"No special notes.",
+    trip_by_TM:"trip by TM (Tm reached limit)", trip_overload:"overload", trip_underload:"underload", trip_over_or_under:"overload or underload",
+    footTpl:"esp-diagnosa · catalog v{v} ({u}) · logic read from signatures.json" },
+  id:{ title:"ESP Diagnosa", sub:"fault-signature analyzer · artificial lift",
+    tabcsv:"Unggah CSV", tabmanual:"Input Tren Manual",
+    eyebrowcsv:"Sumber data · time-series sensor", droptitle:"Lepas file CSV di sini",
+    dropsub:"atau klik untuk memilih · kolom bebas (PIP, Intake Pressure, Amps, …) dikenali otomatis",
+    drophint:"butuh minimal beberapa parameter · timestamp opsional tapi disarankan",
+    eyebrowmanual:"Input arah tren · untuk data tidak lengkap", pacelabel:"Skala waktu tren:",
+    pacesudden:"Mendadak (menit–jam)", pacegradual:"Gradual (hari–bulan)", paceany:"Tidak yakin",
+    run:"Jalankan diagnosa", reset:"Reset", sighead:"Signature — arah tren terbaca",
+    candshead:"Kandidat lain", evhead:"Bukti", interphead:"Interpretasi",
+    recohead:"Rekomendasi tindakan", noteshead:"Catatan",
+    charthead:"Tren parameter (dinormalisasi min–max untuk perbandingan bentuk)",
+    confidence:"keyakinan", hi:"tinggi", md:"sedang", lo:"rendah", score:"skor",
+    signalNormal:"sinyal: normal", diagnosis:"Diagnosa", manualSrc:"Diagnosa · input manual",
+    activePoints:"titik aktif", range:"rentang", hours:"jam", days:"hari",
+    matchesSig:"cocok dengan signature", deviates:"menyimpang dari ekspektasi",
+    signalMatch:"pada Amps/Pi — sesuai tanda tangan khas",
+    catalog:"katalog", cases:"case", loadFail:"katalog tidak termuat",
+    loadManual:"muat signatures.json manual", jsonInvalid:"JSON tidak valid",
+    minParams:"Isi minimal 2 parameter untuk diagnosa.",
+    csvEmpty:"CSV kosong.", noCols:"Tidak ada kolom parameter ESP yang dikenali. Cek nama header.",
+    tooFew:"Data aktif (Freq>0) terlalu sedikit untuk dianalisa.",
+    catalogNotLoaded:"Katalog signatures.json belum termuat.",
+    readFail:"Gagal membaca CSV: ", gatedTag:"↓ mismatch waktu", gatedNote:"(ditekan gating)",
+    noteOperator:"Case ini adalah <b>aksi operator</b>, bukan kegagalan. Verifikasi log setpoint VSD / choke sebelum menindak.",
+    noteTrip:"Case menyertakan <b>TRIP</b> (RA→0). Identifikasi penyebab: {c} — cek log VSD.",
+    noteGated:"<b>{n}</b> berskor arah tinggi ({r}%) tapi <b>ditekan</b>: skala waktunya <i>{p}</i>, tidak cocok dengan tren <i>{o}</i> yang terbaca.",
+    noteMissing:"Parameter penting tidak tersedia: <b>{k}</b>. Menambahkannya akan mempertajam diagnosa; keyakinan disesuaikan.",
+    noteFreq:"Frekuensi berubah {d}% dalam jendela — parameter <b>dinormalisasi terhadap Hz</b> (affinity law) sebelum dinilai. Tile bertanda tren ternormalisasi.",
+    noteFrozen:"Sensor <b>{c}</b> tampak beku/flat (nyaris tanpa variasi) — kemungkinan tidak berfungsi; tidak dipakai sebagai bukti.",
+    noNotes:"Tidak ada catatan khusus.",
+    trip_by_TM:"trip by TM (Tm menyentuh limit)", trip_overload:"overload", trip_underload:"underload", trip_over_or_under:"overload atau underload",
+    footTpl:"esp-diagnosa · katalog v{v} ({u}) · logika dibaca dari signatures.json" }
+};
+const t=k=>T[LANG][k]??k;
+
+/* ---------- Load config ---------- */
 async function loadConfig(){
   const st=document.getElementById('status');
   try{
     const res=await fetch('signatures.json',{cache:'no-store'});
     if(!res.ok) throw new Error('HTTP '+res.status);
-    CFG=await res.json();
-    onConfig();
+    CFG=await res.json(); onConfig();
   }catch(e){
-    // file:// atau tak ada server → tawarkan muat manual
-    st.innerHTML='<span class="bad">katalog tidak termuat</span><br>'+
-      '<label style="color:var(--amber);cursor:pointer;text-decoration:underline">muat signatures.json manual'+
-      '<input type="file" id="cfgFile" accept=".json" class="hidden"></label>';
+    st.innerHTML=`<span class="bad">${t('loadFail')}</span><br>`+
+      `<label style="color:var(--amber);cursor:pointer;text-decoration:underline">${t('loadManual')}`+
+      `<input type="file" id="cfgFile" accept=".json" class="hidden"></label>`;
     document.getElementById('cfgFile').addEventListener('change',ev=>{
       const f=ev.target.files[0]; if(!f)return;
       const r=new FileReader();
-      r.onload=()=>{ try{CFG=JSON.parse(r.result); onConfig();}catch(err){st.innerHTML='<span class="bad">JSON tidak valid</span>';} };
+      r.onload=()=>{ try{CFG=JSON.parse(r.result); onConfig();}catch(err){st.innerHTML=`<span class="bad">${t('jsonInvalid')}</span>`;} };
       r.readAsText(f);
     });
   }
 }
-function onConfig(){
-  document.getElementById('status').innerHTML=
-    `katalog <b>v${CFG.version}</b> · ${CFG.signatures.length} case · ${CFG.updated}`;
-  document.getElementById('foot').textContent=
-    `esp-diagnosa · katalog v${CFG.version} (${CFG.updated}) · logika dibaca dari signatures.json`;
-  buildManualForm();
+function onConfig(){ applyLang(); buildManualForm(); }
+
+/* ---------- Apply language ---------- */
+function applyLang(){
+  document.documentElement.lang=LANG;
+  const set=(id,key)=>{const el=document.getElementById(id); if(el) el.textContent=t(key);};
+  set('t-title','title'); set('t-sub','sub'); set('t-tabcsv','tabcsv'); set('t-tabmanual','tabmanual');
+  set('t-eyebrowcsv','eyebrowcsv'); set('t-droptitle','droptitle'); set('t-dropsub','dropsub'); set('t-drophint','drophint');
+  set('t-eyebrowmanual','eyebrowmanual'); set('t-pacelabel','pacelabel');
+  set('t-pacesudden','pacesudden'); set('t-pacegradual','pacegradual'); set('t-paceany','paceany');
+  set('runManual','run'); set('resetManual','reset');
+  set('t-sighead','sighead'); set('t-candshead','candshead'); set('t-evhead','evhead');
+  set('t-interphead','interphead'); set('t-recohead','recohead'); set('t-noteshead','noteshead'); set('t-charthead','charthead');
+  document.querySelectorAll('#langToggle button').forEach(b=>b.classList.toggle('on',b.dataset.lang===LANG));
+  if(CFG){
+    document.getElementById('status').innerHTML=`${t('catalog')} <b>v${CFG.version}</b> · ${CFG.signatures.length} ${t('cases')} · ${CFG.updated}`;
+    document.getElementById('foot').textContent=t('footTpl').replace('{v}',CFG.version).replace('{u}',CFG.updated);
+    buildManualForm();
+  }
+  if(LAST) render(LAST.obs,LAST.obsPace,LAST.meta); // re-render current result in new language
 }
 
-/* ---------- Helpers ---------- */
+/* ---------- Helpers / engine (validated) ---------- */
 const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
 const std=a=>{const m=avg(a);return Math.sqrt(avg(a.map(x=>(x-m)**2)))};
-function toLevel(d){const t=CFG.trendThresholds;
-  if(d>t.sharpUp)return 3; if(d>t.up)return 2; if(d>t.mildUp)return 1;
-  if(d>=t.mildDown)return 0; if(d>=t.down)return -1; if(d>=t.sharpDown)return -2; return -3;}
+function toLevel(d){const th=CFG.trendThresholds;
+  if(d>th.sharpUp)return 3; if(d>th.up)return 2; if(d>th.mildUp)return 1;
+  if(d>=th.mildDown)return 0; if(d>=th.down)return -1; if(d>=th.sharpDown)return -2; return -3;}
 const norm=s=>s.toLowerCase().replace(/[^a-z0-9]/g,'');
 function canon(h){
-  // buang isi dalam kurung dulu — mis. "Drive Frequency (Hz) (Raw)" → "Drive Frequency"
   const n=norm(h.replace(/\(.*?\)/g,' '));
-  if(CFG.aliases[n]) return CFG.aliases[n];            // exact (menangani PIP, WHP, Amps, dst)
-  let best=null,bl=0;                                   // fallback substring, alias panjang menang
+  if(CFG.aliases[n]) return CFG.aliases[n];
+  let best=null,bl=0;
   for(const k in CFG.aliases){ if(k.length>=4 && n.includes(k) && k.length>bl){best=CFG.aliases[k];bl=k.length;} }
   return best;
 }
-
-/* ---------- Signal character (native resolution) ---------- */
 function signalOf(vals){
-  const v=vals.filter(x=>x===x && x>0);
-  if(v.length<20) return null;
-  const n=v.length, x=[...Array(n).keys()];
-  const mx=avg(x), mv=avg(v);
+  const v=vals.filter(x=>x===x && x>0); if(v.length<20) return null;
+  const n=v.length, x=[...Array(n).keys()], mx=avg(x), mv=avg(v);
   let num=0,den=0; for(let i=0;i<n;i++){num+=(x[i]-mx)*(v[i]-mv);den+=(x[i]-mx)**2;}
-  const slope=num/den, b=mv-slope*mx;
-  const resid=v.map((y,i)=>y-(slope*i+b));
+  const slope=num/den, b=mv-slope*mx, resid=v.map((y,i)=>y-(slope*i+b));
   const cv=std(resid)/Math.max(Math.abs(mv),1e-9);
   const d=v.slice(1).map((y,i)=>Math.sign(y-v[i])).filter(s=>s!==0);
-  let zc=0; for(let i=1;i<d.length;i++) if(d[i]*d[i-1]<0) zc++;
-  zc=zc/Math.max(d.length-1,1);
+  let zc=0; for(let i=1;i<d.length;i++) if(d[i]*d[i-1]<0) zc++; zc=zc/Math.max(d.length-1,1);
   const S=CFG.signalThresholds;
   if(cv>S.cvHigh && zc>S.zcSpikey) return zc>S.zcEratic?'eratic':'spikey';
-  if(cv<S.cvSmooth) return 'smooth';
-  return null;
+  if(cv<S.cvSmooth) return 'smooth'; return null;
 }
-
-/* ---------- Trend from a numeric series ---------- */
 function trend(vals){
-  const v=vals.filter(x=>x===x);
-  if(v.length<6) return null;
+  const v=vals.filter(x=>x===x); if(v.length<6) return null;
   const head=Math.max(1,Math.floor(v.length*0.15));
   const base=avg(v.slice(0,head)), last=avg(v.slice(-head));
   const d=Math.abs(base)<1e-6 ? (last-base)*100 : (last-base)/Math.abs(base)*100;
-  return {level:toLevel(d), dPct:+d.toFixed(1), base, last};
+  return {level:toLevel(d), dPct:+d.toFixed(1)};
 }
-
-/* ---------- Scoring + gating ---------- */
 function scoreCase(sig,obs){
   let got=0,mx=0,matched=[],missed=[];
   for(const p in sig.t){
     if(!(p in obs)) continue;
     const w=(sig.key||[]).includes(p)?2:1; mx+=w;
     const diff=Math.abs(sig.t[p]-obs[p].level);
-    const m=diff===0?1:diff===1?0.6:diff===2?0.3:0;
-    got+=w*m;
+    const m=diff===0?1:diff===1?0.6:diff===2?0.3:0; got+=w*m;
     (m>=0.6?matched:missed).push(p);
   }
   if(sig.signal){ mx+=2;
@@ -327,219 +377,187 @@ function scoreCase(sig,obs){
   }
   const pct=mx>0?Math.round(got/mx*100):0;
   return {id:sig.id,name:sig.name,nameId:sig.nameId,pct,raw:pct,matched,missed,
-          operator:!!sig.operator,trip:sig.trip,signal:sig.signal,pace:sig.pace||'any',
-          narasi:sig.narasi,rekomendasi:sig.rekomendasi,gated:false};
+    operator:!!sig.operator,trip:sig.trip,signal:sig.signal,pace:sig.pace||'any',
+    narasi:sig.narasi,rekomendasi:sig.rekomendasi,t:sig.t,gated:false};
 }
 function diagnose(obs,obsPace){
-  let res=CFG.signatures.map(s=>scoreCase(s,obs));
   const f=CFG.paceHeuristic.gatingFactor;
-  res=res.map(r=>{
-    if(r.pace!=='any' && obsPace!=='any' && r.pace!==obsPace){
-      return {...r,pct:Math.round(r.raw*f),gated:true};
-    }
+  return CFG.signatures.map(s=>scoreCase(s,obs)).map(r=>{
+    if(r.pace!=='any' && obsPace!=='any' && r.pace!==obsPace) return {...r,pct:Math.round(r.raw*f),gated:true};
     return r;
-  });
-  return res.sort((a,b)=>b.pct-a.pct);
+  }).sort((a,b)=>b.pct-a.pct);
 }
 
+/* ---------- pick localized text ---------- */
+function loc(field){ // field may be {en,id} or plain string
+  if(field&&typeof field==='object') return field[LANG]??field.en??field.id??'';
+  return field||'';
+}
+const caseName=r=> LANG==='id' ? (r.nameId||r.name) : (r.name||r.nameId);
+const levLabel=l=> (CFG.levelLabels[LANG]||CFG.levelLabels.en)[l];
+
 /* ---------- Render ---------- */
-function confLabel(pct){ return pct>=72?'tinggi':pct>=55?'sedang':'rendah'; }
+function confKey(pct){ return pct>=72?'hi':pct>=55?'md':'lo'; }
 function tileClass(l){ return l>0?'rise':l<0?'fall':'steady'; }
 
 function render(obs,obsPace,meta){
-  const R=diagnose(obs,obsPace);
-  const top=R[0];
+  LAST={obs,obsPace,meta};
+  const R=diagnose(obs,obsPace), top=R[0];
   document.getElementById('result').style.display='block';
-  document.getElementById('resultSrc').textContent = meta.src;
+  document.getElementById('resultSrc').textContent=meta.src();
 
-  // signature strip
   const strip=document.getElementById('strip'); strip.innerHTML='';
   for(const p of CFG.params){
-    const o=obs[p];
-    const div=document.createElement('div');
+    const o=obs[p], div=document.createElement('div');
     if(!o){ div.className='tile na';
       div.innerHTML=`<div class="pn">${p}</div><div class="gl">·</div><div class="dv">n/a</div>`; }
     else{ div.className='tile '+tileClass(o.level);
-      const extra=(o.dPct!==undefined?`${o.dPct>0?'+':''}${o.dPct}%`:'')+
-                  (o.signal?` ${o.signal}`:'')+(o.trip?' TRIP':'');
+      const extra=(o.dPct!==undefined?`${o.dPct>0?'+':''}${o.dPct}%`:'')+(o.signal?` ${o.signal}`:'')+(o.trip?' TRIP':'');
       div.innerHTML=`<div class="pn">${p}</div><div class="gl">${CFG.levelGlyph[o.level]}</div><div class="dv">${extra||'&nbsp;'}</div>`; }
     strip.appendChild(div);
   }
 
-  // top
-  document.getElementById('topName').textContent=top.nameId||top.name;
-  const conf=confLabel(top.pct);
-  const ce=document.getElementById('topConf'); ce.textContent='keyakinan '+conf; ce.className='conf '+conf;
+  document.getElementById('topName').textContent=caseName(top);
+  const ck=confKey(top.pct), ce=document.getElementById('topConf');
+  ce.textContent=`${t('confidence')} ${t(ck)}`; ce.className='conf '+ck;
   document.getElementById('topBar').style.width=top.pct+'%';
-  document.getElementById('topScore').textContent=`skor ${top.pct}%  ·  ${top.id}`+(top.gated?'  · (ditekan gating)':'');
+  document.getElementById('topScore').textContent=`${t('score')} ${top.pct}%  ·  ${top.id}`+(top.gated?'  · '+t('gatedNote'):'');
 
-  // candidates
   const cw=document.getElementById('cands'); cw.innerHTML='';
   R.slice(1,5).forEach(r=>{
     const el=document.createElement('div'); el.className='cand'+(r.gated?' gated':'');
-    el.innerHTML=`<span class="cn">${r.id}</span><span class="cnm">${r.nameId||r.name}</span>`+
+    el.innerHTML=`<span class="cn">${r.id}</span><span class="cnm">${caseName(r)}</span>`+
       `<span class="cbar"><i style="width:${r.pct}%"></i></span><span class="cn">${r.pct}%</span>`+
-      (r.gated?`<span class="gt">↓ mismatch waktu</span>`:'');
+      (r.gated?`<span class="gt">${t('gatedTag')}</span>`:'');
     cw.appendChild(el);
   });
 
-  // evidence
   const ev=document.getElementById('evidence'); ev.innerHTML='';
-  const lbl=CFG.levelLabels;
   top.matched.forEach(p=>{
     if(p.startsWith('signal:')){ ev.insertAdjacentHTML('beforeend',
-      `<div class="ev match"><span class="dot"></span><span><code>${p.split(':')[1]}</code> pada Amps/Pi — sesuai tanda tangan khas</span></div>`); return; }
+      `<div class="ev match"><span class="dot"></span><span><code>${p.split(':')[1]}</code> ${t('signalMatch')}</span></div>`); return; }
     const o=obs[p]; if(!o)return;
     ev.insertAdjacentHTML('beforeend',
-      `<div class="ev match"><span class="dot"></span><span><code>${p}</code> ${lbl[o.level]} → cocok dengan signature</span></div>`);
+      `<div class="ev match"><span class="dot"></span><span><code>${p}</code> ${levLabel(o.level)} → ${t('matchesSig')}</span></div>`);
   });
   top.missed.forEach(p=>{ const o=obs[p]; if(!o)return;
     ev.insertAdjacentHTML('beforeend',
-      `<div class="ev miss"><span class="dot"></span><span><code>${p}</code> ${lbl[o.level]} → menyimpang dari ekspektasi (${CFG.levelGlyph[CFG.signatures.find(s=>s.id===top.id).t[p]]})</span></div>`);
+      `<div class="ev miss"><span class="dot"></span><span><code>${p}</code> ${levLabel(o.level)} → ${t('deviates')} (${CFG.levelGlyph[top.t[p]]})</span></div>`);
   });
 
-  document.getElementById('interp').textContent=top.narasi||'';
-  document.getElementById('reco').textContent=top.rekomendasi||'';
+  document.getElementById('interp').textContent=loc(top.narasi);
+  document.getElementById('reco').textContent=loc(top.rekomendasi);
 
-  // notes
   const notes=document.getElementById('notes'); notes.innerHTML='';
-  const push=(t,w)=>notes.insertAdjacentHTML('beforeend',`<div class="note${w?' warn':''}">${t}</div>`);
-  if(top.operator) push('Case ini adalah <b>aksi operator</b>, bukan kegagalan. Verifikasi log setpoint VSD / choke sebelum menindak.',true);
-  if(top.trip) push(`Case menyertakan <b>TRIP</b> (RA→0). Identifikasi penyebab: ${({by_TM:'trip by TM (Tm menyentuh limit)',overload:'overload',underload:'underload',over_or_under:'overload atau underload'}[top.trip]||top.trip)} — cek log VSD.`);
-  // gated high-raw candidates worth explaining
+  const push=(html,w)=>notes.insertAdjacentHTML('beforeend',`<div class="note${w?' warn':''}">${html}</div>`);
+  if(top.operator) push(t('noteOperator'),true);
+  if(top.trip) push(t('noteTrip').replace('{c}',t('trip_'+top.trip)||top.trip));
   R.filter(r=>r.gated && r.raw>=60).slice(0,2).forEach(r=>
-    push(`<b>${r.nameId||r.name}</b> berskor arah tinggi (${r.raw}%) tapi <b>ditekan</b>: skala waktunya <i>${r.pace}</i>, tidak cocok dengan tren <i>${obsPace}</i> yang terbaca.`));
-  if(meta.missingKey && meta.missingKey.length)
-    push(`Parameter penting tidak tersedia: <b>${meta.missingKey.join(', ')}</b>. Menambahkannya akan mempertajam diagnosa; keyakinan disesuaikan.`);
-  if(meta.extra) meta.extra.forEach(t=>push(t));
-  if(!notes.children.length) push('Tidak ada catatan khusus.');
+    push(t('noteGated').replace('{n}',caseName(r)).replace('{r}',r.raw).replace('{p}',r.pace).replace('{o}',obsPace)));
+  if(meta.missingKey&&meta.missingKey.length) push(t('noteMissing').replace('{k}',meta.missingKey.join(', ')));
+  if(meta.extra) meta.extra().forEach(html=>push(html));
+  if(!notes.children.length) push(t('noNotes'));
 
-  // chart
   if(meta.series){ drawChart(meta.series); document.getElementById('chartWrap').classList.remove('hidden'); }
   else document.getElementById('chartWrap').classList.add('hidden');
-
-  document.getElementById('result').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 function drawChart(series){
-  const ctx=document.getElementById('chart');
-  if(chart) chart.destroy();
+  const ctx=document.getElementById('chart'); if(chart) chart.destroy();
   const colors={Pi:'#4FB0C6',Pd:'#E5544B',dP:'#F2A93B',Amps:'#3FB6A8',Tm:'#B98CE6',Q:'#89C24F'};
   const ds=Object.entries(series.data).map(([k,v])=>{
-    const mn=Math.min(...v.filter(x=>x===x)), mx=Math.max(...v.filter(x=>x===x)), rng=mx-mn||1;
+    const f=v.filter(x=>x===x), mn=Math.min(...f), mx=Math.max(...f), rng=mx-mn||1;
     return {label:k, data:v.map(x=>x===x?(x-mn)/rng*100:null), borderColor:colors[k]||'#8A9BA8',
       borderWidth:1.6, pointRadius:0, tension:.25, spanGaps:true};
   });
-  chart=new Chart(ctx,{type:'line',
-    data:{labels:series.labels, datasets:ds},
+  chart=new Chart(ctx,{type:'line', data:{labels:series.labels, datasets:ds},
     options:{responsive:true, interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{color:'#8A9BA8',font:{family:'JetBrains Mono',size:11}}},
-        tooltip:{enabled:false}},
+      plugins:{legend:{labels:{color:'#8A9BA8',font:{family:'JetBrains Mono',size:11}}}, tooltip:{enabled:false}},
       scales:{x:{ticks:{color:'#5C6F7E',maxTicksLimit:8,font:{size:10}},grid:{color:'rgba(38,56,74,.4)'}},
         y:{ticks:{color:'#5C6F7E',callback:v=>v+'%',font:{size:10}},grid:{color:'rgba(38,56,74,.4)'}}}}});
 }
 
 /* ---------- CSV pipeline ---------- */
 function analyzeCSV(rows,fields){
-  // map columns
   const colMap={}; let timeCol=null;
-  fields.forEach(f=>{ const c=canon(f); if(c) colMap[f]=c;
-    if(/time|date|tanggal|waktu/i.test(f)) timeCol=f; });
-  // build canonical series
-  const series={}, times=[];
-  const canonCols={};
+  fields.forEach(f=>{ const c=canon(f); if(c) colMap[f]=c; if(/time|date|tanggal|waktu/i.test(f)) timeCol=f; });
+  const series={}, times=[], canonCols={};
   Object.entries(colMap).forEach(([raw,c])=>canonCols[c]=raw);
-  rows.forEach(r=>{
-    if(timeCol){ const d=new Date(r[timeCol]); times.push(isNaN(d)?null:d); }
-  });
-  for(const c in canonCols){
-    series[c]=rows.map(r=>{ const v=parseFloat(r[canonCols[c]]); return isNaN(v)?NaN:v; });
-  }
-  // derive dP if Pd & Pi present but dP absent
+  rows.forEach(r=>{ if(timeCol){ const d=new Date(r[timeCol]); times.push(isNaN(d)?null:d); } });
+  for(const c in canonCols) series[c]=rows.map(r=>{ const v=parseFloat(r[canonCols[c]]); return isNaN(v)?NaN:v; });
   if(series.Pd && series.Pi && !series.dP)
     series.dP=series.Pd.map((v,i)=>{ const p=series.Pi[i]; return (v===v&&p===p)?v-p:NaN; });
 
-  // running filter (Freq>0)
   let mask=rows.map(()=>true);
   if(series.Freq) mask=series.Freq.map(v=>v===v && v>0);
   const idx=mask.map((m,i)=>m?i:-1).filter(i=>i>=0);
-  if(idx.length<6) throw new Error('Data aktif (Freq>0) terlalu sedikit untuk dianalisa.');
+  if(idx.length<6) throw new Error(t('tooFew'));
   const pick=arr=>idx.map(i=>arr[i]);
 
-  // freq change?
-  let freqDelta=0, normNote=[];
-  if(series.Freq){ const t=trend(pick(series.Freq)); if(t) freqDelta=t.dPct; }
+  let freqDelta=0;
+  if(series.Freq){ const tr=trend(pick(series.Freq)); if(tr) freqDelta=tr.dPct; }
   const doNorm=series.Freq && Math.abs(freqDelta)>CFG.freqCompensation.triggerPct;
 
-  // per-param trend + signal
-  const obs={}; const chartData={}; const chartParams=['Pi','Pd','dP','Amps','Tm','Q'];
+  const obs={}, chartData={}, chartParams=['Pi','Pd','dP','Amps','Tm','Q'];
   for(const c in series){
-    const run=pick(series[c]);
-    const t=trend(run); if(!t) continue;
-    let level=t.level, dPct=t.dPct, normalized=false;
-    // frequency normalization
+    const run=pick(series[c]); const tr=trend(run); if(!tr) continue;
+    let level=tr.level, dPct=tr.dPct, normalized=false;
     if(doNorm && (c==='Amps'||c==='dP'||c==='Q') && series.Freq){
-      const fr=pick(series.Freq);
-      const pow=(CFG.freqCompensation.normalize[c]==='Hz2')?2:1;
+      const fr=pick(series.Freq); const pow=(CFG.freqCompensation.normalize[c]==='Hz2')?2:1;
       const ns=run.map((v,i)=> (v===v&&fr[i]>0)? v/Math.pow(fr[i],pow) : NaN);
       const tn=trend(ns); if(tn){ level=tn.level; dPct=tn.dPct; normalized=true; }
     }
     const sig=(c==='Amps'||c==='Pi')?signalOf(run):null;
-    // trip: Amps -> ~0 at tail
     let trip=false;
     if(c==='Amps'){ const tailN=Math.max(3,Math.floor(run.length*0.05));
       const tail=run.slice(-tailN).filter(x=>x===x); const m=avg(run.filter(x=>x===x));
       if(tail.length && avg(tail)<0.05*Math.max(m,1e-9)) trip=true; }
     obs[c]={level,dPct,signal:sig,trip,normalized};
-    if(chartParams.includes(c)){ // downsample for chart
-      const step=Math.max(1,Math.floor(run.length/220));
-      chartData[c]=run.filter((_,i)=>i%step===0);
-    }
+    if(chartParams.includes(c)){ const step=Math.max(1,Math.floor(run.length/220));
+      chartData[c]=run.filter((_,i)=>i%step===0); }
   }
 
-  // pace from timestamps
   let obsPace='any', spanH=null;
   const runTimes=idx.map(i=>times[i]).filter(Boolean);
-  if(runTimes.length>1){
-    spanH=(runTimes[runTimes.length-1]-runTimes[0])/3.6e6;
-    const P=CFG.paceHeuristic;
-    obsPace = spanH<P.suddenMaxHours?'sudden' : spanH>P.gradualMinHours?'gradual':'any';
-  }
-  // if amps trip and short span -> sudden
+  if(runTimes.length>1){ spanH=(runTimes[runTimes.length-1]-runTimes[0])/3.6e6;
+    const P=CFG.paceHeuristic; obsPace=spanH<P.suddenMaxHours?'sudden':spanH>P.gradualMinHours?'gradual':'any'; }
   if(obs.Amps&&obs.Amps.trip && spanH!==null && spanH<CFG.paceHeuristic.gradualMinHours) obsPace='sudden';
 
-  // chart labels
   let labels=[];
   if(runTimes.length){ const step=Math.max(1,Math.floor(idx.length/220));
-    labels=idx.filter((_,i)=>i%step===0).map(i=>{ const d=times[i]; 
+    labels=idx.filter((_,i)=>i%step===0).map(i=>{ const d=times[i];
       return d?`${d.getDate()}/${d.getMonth()+1} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`:''; }); }
 
-  // meta
   const present=Object.keys(obs);
   const missingKey=['Pd','dP','Q','THP','Pi','Tm'].filter(p=>!present.includes(p));
-  const extra=[];
-  if(doNorm) extra.push(`Frekuensi berubah ${freqDelta>0?'+':''}${freqDelta}% dalam jendela — parameter <b>dinormalisasi terhadap Hz</b> (affinity law) sebelum dinilai. Tile bertanda tren ternormalisasi.`);
-  // frozen/flat sensor detection
+  const frozen=[];
   for(const c of present){ const run=pick(series[c]).filter(x=>x===x);
-    if(run.length>20 && std(run)/Math.max(Math.abs(avg(run)),1e-9)<0.002)
-      extra.push(`Sensor <b>${c}</b> tampak beku/flat (nyaris tanpa variasi) — kemungkinan tidak berfungsi; tidak dipakai sebagai bukti.`); }
+    if(run.length>20 && std(run)/Math.max(Math.abs(avg(run)),1e-9)<0.002) frozen.push(c); }
 
-  return {obs,obsPace,meta:{src:`Diagnosa · ${idx.length} titik aktif`+(spanH?` · rentang ${spanH<48?spanH.toFixed(1)+' jam':(spanH/24).toFixed(1)+' hari'}`:''),
-    missingKey,extra, series:(labels.length?{labels,data:chartData}:null)}};
+  const spanStr=spanH!==null?` · ${t('range')} ${spanH<48?spanH.toFixed(1)+' '+t('hours'):(spanH/24).toFixed(1)+' '+t('days')}`:'';
+  return { obs, obsPace,
+    meta:{
+      src:()=>`${t('diagnosis')} · ${idx.length} ${t('activePoints')}${spanStr}`,
+      missingKey,
+      extra:()=>{ const a=[];
+        if(doNorm) a.push(t('noteFreq').replace('{d}',(freqDelta>0?'+':'')+freqDelta));
+        frozen.forEach(c=>a.push(t('noteFrozen').replace('{c}',c))); return a; },
+      series:(labels.length?{labels,data:chartData}:null)
+    } };
 }
 
 /* ---------- Manual form ---------- */
 function buildManualForm(){
   const grid=document.getElementById('manualGrid'); grid.innerHTML='';
-  const opts=[['','—'],['3','↑↑ naik tajam'],['2','↑ naik'],['1','↗ naik landai'],['0','→ steady'],
-    ['-1','↘ turun landai'],['-2','↓ turun'],['-3','↓↓ turun tajam']];
+  const LL=CFG.levelLabels[LANG]||CFG.levelLabels.en;
+  const opts=[['','—'],['3',LL['3']],['2',LL['2']],['1',LL['1']],['0',LL['0']],['-1',LL['-1']],['-2',LL['-2']],['-3',LL['-3']]];
   CFG.params.forEach(p=>{
     const f=document.createElement('div'); f.className='field';
     let sel=`<select data-p="${p}">`+opts.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('')+`</select>`;
     let extra='';
     if(p==='Amps'||p==='Pi'){
       extra=`<select data-sig="${p}" style="margin-top:6px">`+
-        [['','sinyal: normal'],['spikey','spikey'],['eratic','eratic'],['smooth','smooth']]
+        [['',t('signalNormal')],['spikey','spikey'],['eratic','eratic'],['smooth','smooth']]
         .map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('')+`</select>`;
     }
     f.innerHTML=`<label><b>${p}</b> · ${CFG.paramLabels[p]||''}</label>${sel}${extra}`;
@@ -550,30 +568,32 @@ let manualPace='gradual';
 function runManual(){
   const obs={};
   document.querySelectorAll('#manualGrid select[data-p]').forEach(s=>{
-    if(s.value==='') return;
-    const p=s.dataset.p; obs[p]={level:parseInt(s.value),signal:null};
-  });
+    if(s.value==='') return; obs[s.dataset.p]={level:parseInt(s.value),signal:null}; });
   document.querySelectorAll('#manualGrid select[data-sig]').forEach(s=>{
-    const p=s.dataset.sig; if(s.value&&obs[p]) obs[p].signal=s.value;
-  });
-  if(Object.keys(obs).length<2){ alert('Isi minimal 2 parameter untuk diagnosa.'); return; }
+    const p=s.dataset.sig; if(s.value&&obs[p]) obs[p].signal=s.value; });
+  if(Object.keys(obs).length<2){ alert(t('minParams')); return; }
   const missingKey=['Pd','dP','Q','THP','Pi','Tm'].filter(p=>!(p in obs));
-  render(obs,manualPace,{src:'Diagnosa · input manual',missingKey,extra:[],series:null});
+  render(obs,manualPace,{src:()=>t('manualSrc'),missingKey,extra:()=>[],series:null});
 }
 
 /* ---------- Wiring ---------- */
-document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
-  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on')); t.classList.add('on');
-  document.getElementById('tab-csv').classList.toggle('hidden',t.dataset.tab!=='csv');
-  document.getElementById('tab-manual').classList.toggle('hidden',t.dataset.tab!=='manual');
+document.querySelectorAll('.tab').forEach(tb=>tb.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on')); tb.classList.add('on');
+  document.getElementById('tab-csv').classList.toggle('hidden',tb.dataset.tab!=='csv');
+  document.getElementById('tab-manual').classList.toggle('hidden',tb.dataset.tab!=='manual');
 }));
+document.getElementById('langToggle').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON')return; LANG=e.target.dataset.lang;
+  try{localStorage.setItem('esp_lang',LANG);}catch(_){}
+  applyLang();
+});
 document.getElementById('paceSeg').addEventListener('click',e=>{
   if(e.target.tagName!=='BUTTON')return;
   document.querySelectorAll('#paceSeg button').forEach(b=>b.classList.remove('on'));
   e.target.classList.add('on'); manualPace=e.target.dataset.pace;
 });
 document.getElementById('runManual').addEventListener('click',runManual);
-document.getElementById('resetManual').addEventListener('click',()=>{ buildManualForm(); document.getElementById('result').style.display='none'; });
+document.getElementById('resetManual').addEventListener('click',()=>{ buildManualForm(); document.getElementById('result').style.display='none'; LAST=null; });
 
 const drop=document.getElementById('drop'), fileInput=document.getElementById('file');
 drop.addEventListener('click',()=>fileInput.click());
@@ -581,23 +601,25 @@ drop.addEventListener('click',()=>fileInput.click());
 ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('hot');}));
 drop.addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
 fileInput.addEventListener('change',e=>{ const f=e.target.files[0]; if(f) handleFile(f); });
-
 function handleFile(f){
   const err=document.getElementById('csvErr'); err.classList.add('hidden');
-  if(!CFG){ err.textContent='Katalog signatures.json belum termuat.'; err.classList.remove('hidden'); return; }
+  if(!CFG){ err.textContent=t('catalogNotLoaded'); err.classList.remove('hidden'); return; }
   Papa.parse(f,{header:true, dynamicTyping:false, skipEmptyLines:true,
-    complete:res=>{
-      try{
-        if(!res.data.length) throw new Error('CSV kosong.');
+    complete:res=>{ try{
+        if(!res.data.length) throw new Error(t('csvEmpty'));
         const {obs,obsPace,meta}=analyzeCSV(res.data,res.meta.fields);
-        if(Object.keys(obs).length<2) throw new Error('Tidak ada kolom parameter ESP yang dikenali. Cek nama header.');
+        if(Object.keys(obs).length<2) throw new Error(t('noCols'));
         render(obs,obsPace,meta);
-      }catch(e){ err.textContent='⚠ '+e.message; err.classList.remove('hidden'); }
-    },
-    error:e=>{ err.textContent='⚠ Gagal membaca CSV: '+e.message; err.classList.remove('hidden'); }
+      }catch(e){ err.textContent='⚠ '+e.message; err.classList.remove('hidden'); } },
+    error:e=>{ err.textContent='⚠ '+t('readFail')+e.message; err.classList.remove('hidden'); }
   });
 }
 
+/* init language from storage or browser */
+try{ const saved=localStorage.getItem('esp_lang');
+  if(saved==='en'||saved==='id') LANG=saved;
+  else if((navigator.language||'').toLowerCase().startsWith('id')) LANG='id';
+}catch(_){}
 loadConfig();
 </script>
 </body>
