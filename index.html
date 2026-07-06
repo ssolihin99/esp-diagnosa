@@ -9,6 +9,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"></script>
 <style>
 :root{
   --bg:#0E1620; --bg2:#131E2B; --panel:#18242F; --panel2:#1D2C3A;
@@ -215,6 +217,10 @@ canvas{margin-top:8px}
     </div>
     <div class="sec hidden" id="chartWrap">
       <h4 id="t-charthead">Parameter trend (min–max normalized for shape comparison)</h4>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap">
+        <span id="t-charthint" style="font-size:11px;color:var(--faint);font-family:var(--mono)">Scroll/drag to zoom · click a legend item to hide · hover for values</span>
+        <button class="btn btn-ghost" id="chartReset" style="padding:5px 12px;font-size:12px">Reset zoom</button>
+      </div>
       <canvas id="chart" height="150"></canvas>
     </div>
   </section>
@@ -240,6 +246,8 @@ const T={
     candshead:"Other candidates", evhead:"Evidence", interphead:"Interpretation",
     recohead:"Recommended action", noteshead:"Notes",
     charthead:"Parameter trend (min–max normalized for shape comparison)",
+    charthint:"Scroll/drag to zoom · click a legend item to hide · hover for values",
+    resetZoom:"Reset zoom",
     confidence:"confidence", hi:"high", md:"medium", lo:"low", score:"score",
     signalNormal:"signal: normal", diagnosis:"Diagnosis", manualSrc:"Diagnosis · manual input",
     activePoints:"active points", range:"range", hours:"h", days:"d",
@@ -279,6 +287,8 @@ const T={
     candshead:"Kandidat lain", evhead:"Bukti", interphead:"Interpretasi",
     recohead:"Rekomendasi tindakan", noteshead:"Catatan",
     charthead:"Tren parameter (dinormalisasi min–max untuk perbandingan bentuk)",
+    charthint:"Scroll/drag untuk zoom · klik item legenda untuk sembunyikan · arahkan kursor untuk nilai",
+    resetZoom:"Reset zoom",
     confidence:"keyakinan", hi:"tinggi", md:"sedang", lo:"rendah", score:"skor",
     signalNormal:"sinyal: normal", diagnosis:"Diagnosa", manualSrc:"Diagnosa · input manual",
     activePoints:"titik aktif", range:"rentang", hours:"jam", days:"hari",
@@ -342,6 +352,7 @@ function applyLang(){
   set('runManual','run'); set('resetManual','reset');
   set('t-sighead','sighead'); set('t-candshead','candshead'); set('t-evhead','evhead');
   set('t-interphead','interphead'); set('t-recohead','recohead'); set('t-noteshead','noteshead'); set('t-charthead','charthead');
+  set('t-charthint','charthint'); set('chartReset','resetZoom');
   document.querySelectorAll('#langToggle button').forEach(b=>b.classList.toggle('on',b.dataset.lang===LANG));
   if(CFG){
     document.getElementById('status').innerHTML=`${t('catalog')} <b>v${CFG.version}</b> · ${CFG.signatures.length} ${t('cases')} · ${CFG.updated}`;
@@ -494,17 +505,32 @@ function render(obs,obsPace,meta){
 
 function drawChart(series){
   const ctx=document.getElementById('chart'); if(chart) chart.destroy();
-  const colors={Pi:'#4FB0C6',Pd:'#E5544B',dP:'#F2A93B',Amps:'#3FB6A8',Tm:'#B98CE6',Q:'#89C24F'};
+  const fixed={Pi:'#4FB0C6',Pd:'#E5544B',dP:'#F2A93B',Amps:'#3FB6A8',Tm:'#B98CE6',Q:'#89C24F',
+    Ti:'#E58F7B',THP:'#6FA8DC',CHP:'#C6A0F6',Vib:'#E6C34F',Freq:'#7FD1B9'};
+  const palette=['#4FB0C6','#E5544B','#F2A93B','#3FB6A8','#B98CE6','#89C24F','#E58F7B','#6FA8DC','#C6A0F6','#E6C34F']; let ci=0;
   const ds=Object.entries(series.data).map(([k,v])=>{
-    const f=v.filter(x=>x===x), mn=Math.min(...f), mx=Math.max(...f), rng=mx-mn||1;
-    return {label:k, data:v.map(x=>x===x?(x-mn)/rng*100:null), borderColor:colors[k]||'#8A9BA8',
-      borderWidth:1.6, pointRadius:0, tension:.25, spanGaps:true};
+    const f=v.filter(x=>x===x), mn=Math.min(...f), mx=Math.max(...f), rng=(mx-mn)||1;
+    const color=fixed[k]||palette[ci++%palette.length];
+    return {label:k, data:v.map(x=>x===x?(x-mn)/rng*100:null), _raw:v, borderColor:color,
+      backgroundColor:color, borderWidth:1.5, pointRadius:0, pointHoverRadius:3, tension:.2, spanGaps:true};
   });
   chart=new Chart(ctx,{type:'line', data:{labels:series.labels, datasets:ds},
-    options:{responsive:true, interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{color:'#8A9BA8',font:{family:'JetBrains Mono',size:11}}}, tooltip:{enabled:false}},
-      scales:{x:{ticks:{color:'#5C6F7E',maxTicksLimit:8,font:{size:10}},grid:{color:'rgba(38,56,74,.4)'}},
-        y:{ticks:{color:'#5C6F7E',callback:v=>v+'%',font:{size:10}},grid:{color:'rgba(38,56,74,.4)'}}}}});
+    options:{responsive:true, animation:false, interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{color:'#8A9BA8',font:{family:'JetBrains Mono',size:11},usePointStyle:true,boxWidth:8}},
+        tooltip:{enabled:true, backgroundColor:'#1D2C3A', borderColor:'#324A61', borderWidth:1,
+          titleColor:'#E6EDF3', bodyColor:'#E6EDF3', titleFont:{family:'JetBrains Mono',size:11}, bodyFont:{family:'JetBrains Mono',size:11},
+          callbacks:{ label:c=>{ const r=c.dataset._raw?c.dataset._raw[c.dataIndex]:null;
+            return `${c.dataset.label}: ${(r!=null&&r===r)?(+r).toLocaleString(undefined,{maximumFractionDigits:2}):'—'}`; } }},
+        zoom:{
+          pan:{enabled:true, mode:'x'},
+          zoom:{ wheel:{enabled:true}, pinch:{enabled:true},
+            drag:{enabled:true, backgroundColor:'rgba(242,169,59,0.12)', borderColor:'#F2A93B', borderWidth:1}, mode:'x' }
+        }
+      },
+      scales:{x:{ticks:{color:'#5C6F7E',maxTicksLimit:9,font:{size:10}},grid:{color:'rgba(38,56,74,.4)'}},
+        y:{ticks:{color:'#5C6F7E',callback:v=>v+'%',font:{size:10}},grid:{color:'rgba(38,56,74,.4)'},
+          title:{display:true,text:'min–max %',color:'#5C6F7E',font:{size:9}}}}}});
 }
 
 /* ---------- Hybrid CSV + manual supplement ---------- */
@@ -601,7 +627,7 @@ function analyzeCSV(rows,fields,fmt){
   if(series.Freq){ const tr=trend(pick(series.Freq)); if(tr) freqDelta=tr.dPct; }
   const doNorm=series.Freq && Math.abs(freqDelta)>CFG.freqCompensation.triggerPct;
 
-  const obs={}, chartData={}, chartParams=['Pi','Pd','dP','Amps','Tm','Q'];
+  const obs={};
   for(const c in series){
     const run=pick(series[c]); const tr=trend(run); if(!tr) continue;
     let level=tr.level, dPct=tr.dPct, normalized=false;
@@ -616,8 +642,6 @@ function analyzeCSV(rows,fields,fmt){
       const tail=run.slice(-tailN).filter(x=>x===x); const m=avg(run.filter(x=>x===x));
       if(tail.length && avg(tail)<0.05*Math.max(m,1e-9)) trip=true; }
     obs[c]={level,dPct,signal:sig,trip,normalized};
-    if(chartParams.includes(c)){ const step=Math.max(1,Math.floor(run.length/220));
-      chartData[c]=run.filter((_,i)=>i%step===0); }
   }
 
   let obsPace='any', spanH=null;
@@ -626,10 +650,17 @@ function analyzeCSV(rows,fields,fmt){
     const P=CFG.paceHeuristic; obsPace=spanH<P.suddenMaxHours?'sudden':spanH>P.gradualMinHours?'gradual':'any'; }
   if(obs.Amps&&obs.Amps.trip && spanH!==null && spanH<CFG.paceHeuristic.gradualMinHours) obsPace='sudden';
 
+  const step=Math.max(1,Math.floor(idx.length/300));
+  const chartData={};
+  for(const c of Object.keys(obs)){ const run=pick(series[c]); chartData[c]=run.filter((_,i)=>i%step===0); }
   let labels=[];
-  if(runTimes.length){ const step=Math.max(1,Math.floor(idx.length/220));
+  if(runTimes.length){
     labels=idx.filter((_,i)=>i%step===0).map(i=>{ const d=times[i];
-      return d?`${d.getDate()}/${d.getMonth()+1} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`:''; }); }
+      return d?`${d.getDate()}/${d.getMonth()+1} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`:''; });
+  } else {
+    const anyKey=Object.keys(chartData)[0];
+    labels=anyKey?chartData[anyKey].map((_,i)=>String(i+1)):[];
+  }
 
   const present=Object.keys(obs);
   const missingKey=['Pd','dP','Q','THP','Pi','Tm'].filter(p=>!present.includes(p));
@@ -646,7 +677,7 @@ function analyzeCSV(rows,fields,fmt){
         if(fmt==='starview') a.push(t('noteStarview'));
         if(doNorm) a.push(t('noteFreq').replace('{d}',(freqDelta>0?'+':'')+freqDelta));
         frozen.forEach(c=>a.push(t('noteFrozen').replace('{c}',c))); return a; },
-      series:(labels.length?{labels,data:chartData}:null)
+      series:(Object.keys(chartData).length?{labels,data:chartData}:null)
     } };
 }
 
@@ -728,6 +759,11 @@ function handleFile(f){
   };
   reader.readAsText(f);
 }
+
+/* register zoom plugin (UMD auto-registers, but be safe) */
+try{ const zp=window.ChartZoom||window.chartjsPluginZoom||window['chartjs-plugin-zoom'];
+  if(zp && window.Chart && Chart.register) Chart.register(zp.default||zp); }catch(e){}
+document.getElementById('chartReset').addEventListener('click',()=>{ if(chart&&chart.resetZoom) chart.resetZoom(); });
 
 /* init language from storage or browser */
 try{ const saved=localStorage.getItem('esp_lang');
