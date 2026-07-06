@@ -80,6 +80,12 @@ select:focus{outline:none; border-color:var(--amber)}
 .tile .dv{font-family:var(--mono); font-size:10px; color:var(--faint)}
 .tile.rise .gl{color:var(--rise)} .tile.fall .gl{color:var(--fall)} .tile.steady .gl{color:var(--steady)}
 .tile.na{opacity:.4} .tile.na .gl{color:var(--faint); font-size:15px}
+.tile.manual{border-color:rgba(63,182,168,.4); background:rgba(63,182,168,.06)}
+.supp{border:1px solid rgba(63,182,168,.28); background:rgba(63,182,168,.05); border-radius:12px; padding:16px}
+.supp .sh{font-family:var(--disp); font-weight:600; font-size:15px; margin:0 0 3px; color:var(--ink)}
+.supp .sp{font-size:12.5px; color:var(--muted); margin:0 0 14px}
+.supp .grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.supp-actions{margin-top:14px}
 .result{margin-top:20px; display:none}
 .diag-head{display:flex; align-items:baseline; justify-content:space-between; gap:14px; flex-wrap:wrap}
 .diag-name{font-family:var(--disp); font-size:24px; font-weight:700; letter-spacing:-.01em}
@@ -178,6 +184,7 @@ canvas{margin-top:8px}
       <h4 id="t-sighead">Signature — detected trend direction</h4>
       <div class="strip" id="strip"></div>
     </div>
+    <div id="suppWrap" class="sec hidden"></div>
     <div class="sec">
       <div class="diag-head">
         <span class="diag-name" id="topName">—</span>
@@ -217,7 +224,8 @@ canvas{margin-top:8px}
 
 <script>
 "use strict";
-let CFG=null, chart=null, LANG='en', LAST=null;
+let CFG=null, chart=null, LANG='en', LAST=null, CSVSTATE=null, MANUAL_SUPP={};
+const SCOREP=['Q','THP','Amps','Pd','Pi','dP','Tm']; // parameter yang dipakai scoring
 
 /* ---------- i18n dictionary (UI strings) ---------- */
 const T={
@@ -251,6 +259,11 @@ const T={
     noteFreq:"Frequency changed {d}% within the window — parameters were <b>Hz-normalized</b> (affinity law) before assessment. Tiles marked show normalized trends.",
     noteFrozen:"Sensor <b>{c}</b> looks frozen/flat (almost no variation) — likely faulty; not used as evidence.",
     noNotes:"No special notes.",
+    suppTitle:"Fill missing parameters manually",
+    suppHint:"These aren\u2019t in the CSV. Add trends you know (optional) to sharpen the diagnosis \u2014 CSV values stay untouched.",
+    suppApply:"Apply & re-diagnose",
+    tileManual:"manual",
+    noteManual:"Manually supplied (not from CSV): <b>{p}</b>. CSV-derived parameters are unchanged.",
     starviewFail:"Starview format detected but could not be parsed (trend-name row not found).",
     noteStarview:"<b>Starview</b> trend-report format auto-detected and converted. Note: this export usually lacks Amps/Freq, so some cases (e.g. broken shaft, gas lock) cannot be confirmed without them.",
     trip_by_TM:"trip by TM (Tm reached limit)", trip_overload:"overload", trip_underload:"underload", trip_over_or_under:"overload or underload",
@@ -285,6 +298,11 @@ const T={
     noteFreq:"Frekuensi berubah {d}% dalam jendela — parameter <b>dinormalisasi terhadap Hz</b> (affinity law) sebelum dinilai. Tile bertanda tren ternormalisasi.",
     noteFrozen:"Sensor <b>{c}</b> tampak beku/flat (nyaris tanpa variasi) — kemungkinan tidak berfungsi; tidak dipakai sebagai bukti.",
     noNotes:"Tidak ada catatan khusus.",
+    suppTitle:"Lengkapi parameter yang tidak ada",
+    suppHint:"Parameter ini tidak ada di CSV. Isi tren yang kamu tahu (opsional) untuk mempertajam diagnosa \u2014 nilai dari CSV tidak diubah.",
+    suppApply:"Terapkan & diagnosa ulang",
+    tileManual:"manual",
+    noteManual:"Dilengkapi manual (bukan dari CSV): <b>{p}</b>. Parameter dari CSV tidak berubah.",
     starviewFail:"Format Starview terdeteksi tapi gagal diurai (baris nama trend tidak ditemukan).",
     noteStarview:"Format laporan tren <b>Starview</b> terdeteksi & dikonversi otomatis. Catatan: export ini biasanya tanpa Amps/Freq, jadi beberapa case (mis. broken shaft, gas lock) tidak bisa dikonfirmasi tanpanya.",
     trip_by_TM:"trip by TM (Tm menyentuh limit)", trip_overload:"overload", trip_underload:"underload", trip_over_or_under:"overload atau underload",
@@ -416,8 +434,10 @@ function render(obs,obsPace,meta){
     const o=obs[p], div=document.createElement('div');
     if(!o){ div.className='tile na';
       div.innerHTML=`<div class="pn">${p}</div><div class="gl">·</div><div class="dv">n/a</div>`; }
-    else{ div.className='tile '+tileClass(o.level);
-      const extra=(o.dPct!==undefined?`${o.dPct>0?'+':''}${o.dPct}%`:'')+(o.signal?` ${o.signal}`:'')+(o.trip?' TRIP':'');
+    else{ div.className='tile '+tileClass(o.level)+(o.manual?' manual':'');
+      const extra=o.manual
+        ? ('✎ '+t('tileManual')+(o.signal?' '+o.signal:''))
+        : ((o.dPct!==undefined?`${o.dPct>0?'+':''}${o.dPct}%`:'')+(o.signal?` ${o.signal}`:'')+(o.trip?' TRIP':''));
       div.innerHTML=`<div class="pn">${p}</div><div class="gl">${CFG.levelGlyph[o.level]}</div><div class="dv">${extra||'&nbsp;'}</div>`; }
     strip.appendChild(div);
   }
@@ -459,12 +479,17 @@ function render(obs,obsPace,meta){
   if(top.trip) push(t('noteTrip').replace('{c}',t('trip_'+top.trip)||top.trip));
   R.filter(r=>r.gated && r.raw>=60).slice(0,2).forEach(r=>
     push(t('noteGated').replace('{n}',caseName(r)).replace('{r}',r.raw).replace('{p}',r.pace).replace('{o}',obsPace)));
-  if(meta.missingKey&&meta.missingKey.length) push(t('noteMissing').replace('{k}',meta.missingKey.join(', ')));
+  const manualParams=Object.keys(obs).filter(p=>obs[p].manual);
+  if(manualParams.length) push(t('noteManual').replace('{p}',manualParams.join(', ')));
+  const missingNow=SCOREP.filter(p=>!(p in obs));
+  if(missingNow.length) push(t('noteMissing').replace('{k}',missingNow.join(', ')));
   if(meta.extra) meta.extra().forEach(html=>push(html));
   if(!notes.children.length) push(t('noNotes'));
 
   if(meta.series){ drawChart(meta.series); document.getElementById('chartWrap').classList.remove('hidden'); }
   else document.getElementById('chartWrap').classList.add('hidden');
+
+  if(CSVSTATE) buildSupplement(); else document.getElementById('suppWrap').classList.add('hidden');
 }
 
 function drawChart(series){
@@ -480,6 +505,50 @@ function drawChart(series){
       plugins:{legend:{labels:{color:'#8A9BA8',font:{family:'JetBrains Mono',size:11}}}, tooltip:{enabled:false}},
       scales:{x:{ticks:{color:'#5C6F7E',maxTicksLimit:8,font:{size:10}},grid:{color:'rgba(38,56,74,.4)'}},
         y:{ticks:{color:'#5C6F7E',callback:v=>v+'%',font:{size:10}},grid:{color:'rgba(38,56,74,.4)'}}}}});
+}
+
+/* ---------- Hybrid CSV + manual supplement ---------- */
+function renderCSV(){
+  const base=CSVSTATE.obs, merged={...base};
+  for(const p in MANUAL_SUPP){
+    const m=MANUAL_SUPP[p];
+    if(!(p in base) && m && m.level!==null && m.level!==undefined)
+      merged[p]={level:m.level, signal:m.signal||null, manual:true};
+  }
+  render(merged, CSVSTATE.obsPace, CSVSTATE.meta);
+}
+function buildSupplement(){
+  const wrap=document.getElementById('suppWrap');
+  const missing=SCOREP.filter(p=>!(p in CSVSTATE.obs));
+  if(!missing.length){ wrap.classList.add('hidden'); wrap.innerHTML=''; return; }
+  const LL=CFG.levelLabels[LANG]||CFG.levelLabels.en;
+  const opts=[['','—'],['3',LL['3']],['2',LL['2']],['1',LL['1']],['0',LL['0']],['-1',LL['-1']],['-2',LL['-2']],['-3',LL['-3']]];
+  let html=`<div class="supp"><p class="sh">${t('suppTitle')}</p><p class="sp">${t('suppHint')}</p><div class="grid">`;
+  missing.forEach(p=>{
+    const cur=MANUAL_SUPP[p]||{};
+    let sel=`<select data-sp="${p}">`+opts.map(o=>`<option value="${o[0]}"${String(cur.level)===o[0]?' selected':''}>${o[1]}</option>`).join('')+`</select>`;
+    let extra='';
+    if(p==='Amps'||p==='Pi'){
+      extra=`<select data-spsig="${p}" style="margin-top:6px">`+
+        [['',t('signalNormal')],['spikey','spikey'],['eratic','eratic'],['smooth','smooth']]
+        .map(o=>`<option value="${o[0]}"${(cur.signal||'')===o[0]?' selected':''}>${o[1]}</option>`).join('')+`</select>`;
+    }
+    html+=`<div class="field"><label><b>${p}</b> · ${CFG.paramLabels[p]||''}</label>${sel}${extra}</div>`;
+  });
+  html+=`</div><div class="supp-actions"><button class="btn btn-primary" id="applySupp">${t('suppApply')}</button></div></div>`;
+  wrap.innerHTML=html; wrap.classList.remove('hidden');
+  document.getElementById('applySupp').addEventListener('click',applySupplement);
+}
+function applySupplement(){
+  document.querySelectorAll('#suppWrap select[data-sp]').forEach(s=>{
+    const p=s.dataset.sp;
+    if(s.value==='') delete MANUAL_SUPP[p];
+    else MANUAL_SUPP[p]={level:parseInt(s.value), signal:(MANUAL_SUPP[p]||{}).signal||null};
+  });
+  document.querySelectorAll('#suppWrap select[data-spsig]').forEach(s=>{
+    const p=s.dataset.spsig; if(MANUAL_SUPP[p]) MANUAL_SUPP[p].signal=s.value||null;
+  });
+  renderCSV();
 }
 
 /* ---------- Format detection & parsing ---------- */
@@ -607,8 +676,8 @@ function runManual(){
   document.querySelectorAll('#manualGrid select[data-sig]').forEach(s=>{
     const p=s.dataset.sig; if(s.value&&obs[p]) obs[p].signal=s.value; });
   if(Object.keys(obs).length<2){ alert(t('minParams')); return; }
-  const missingKey=['Pd','dP','Q','THP','Pi','Tm'].filter(p=>!(p in obs));
-  render(obs,manualPace,{src:()=>t('manualSrc'),missingKey,extra:()=>[],series:null});
+  CSVSTATE=null;
+  render(obs,manualPace,{src:()=>t('manualSrc'),extra:()=>[],series:null});
 }
 
 /* ---------- Wiring ---------- */
@@ -628,7 +697,7 @@ document.getElementById('paceSeg').addEventListener('click',e=>{
   e.target.classList.add('on'); manualPace=e.target.dataset.pace;
 });
 document.getElementById('runManual').addEventListener('click',runManual);
-document.getElementById('resetManual').addEventListener('click',()=>{ buildManualForm(); document.getElementById('result').style.display='none'; LAST=null; });
+document.getElementById('resetManual').addEventListener('click',()=>{ buildManualForm(); document.getElementById('result').style.display='none'; LAST=null; CSVSTATE=null; MANUAL_SUPP={}; });
 
 const drop=document.getElementById('drop'), fileInput=document.getElementById('file');
 drop.addEventListener('click',()=>fileInput.click());
@@ -653,7 +722,8 @@ function handleFile(f){
       if(!parsed.data.length) throw new Error(t('csvEmpty'));
       const {obs,obsPace,meta}=analyzeCSV(parsed.data,parsed.fields,fmt);
       if(Object.keys(obs).length<2) throw new Error(t('noCols'));
-      render(obs,obsPace,meta);
+      CSVSTATE={obs,obsPace,meta}; MANUAL_SUPP={};
+      renderCSV();
     }catch(e){ err.textContent='⚠ '+e.message; err.classList.remove('hidden'); }
   };
   reader.readAsText(f);
