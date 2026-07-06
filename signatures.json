@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.1",
   "updated": "2026-07-04",
   "note": "Sumber kebenaran diagnosa ESP (dwibahasa EN/ID). narasi/rekomendasi = {en,id}.",
   "trendThresholds": {
@@ -82,7 +82,20 @@
     "hz": "Freq",
     "freq": "Freq",
     "frequency": "Freq",
-    "drivefrequency": "Freq"
+    "drivefrequency": "Freq",
+    "dhintakepressure": "Pi",
+    "dhdischargepressure": "Pd",
+    "dhmotortemp": "Tm",
+    "dhmotortemperature": "Tm",
+    "dhintaketemp": "Ti",
+    "dhintaketemperature": "Ti",
+    "dhvibration": "Vib",
+    "dhcurrent": "Amps",
+    "dhmotorcurrent": "Amps",
+    "dhfrequency": "Freq",
+    "dhfreq": "Freq",
+    "motorcurrentavg": "Amps",
+    "outputfrequency": "Freq"
   },
   "levels": {
     "naik tajam": 3,
@@ -571,5 +584,9 @@
       },
       "rekomendasi_en": "Check production rate, water cut, fluid level. Ensure underload protection is active. If the inflow decline is permanent, consider downsizing the pump at the next workover. Avoid repeated operation in the pump-off zone."
     }
+  ],
+  "aliasBlocklist": [
+    "leakage",
+    "insulation"
   ]
 }

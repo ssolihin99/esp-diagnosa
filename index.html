@@ -251,6 +251,8 @@ const T={
     noteFreq:"Frequency changed {d}% within the window — parameters were <b>Hz-normalized</b> (affinity law) before assessment. Tiles marked show normalized trends.",
     noteFrozen:"Sensor <b>{c}</b> looks frozen/flat (almost no variation) — likely faulty; not used as evidence.",
     noNotes:"No special notes.",
+    starviewFail:"Starview format detected but could not be parsed (trend-name row not found).",
+    noteStarview:"<b>Starview</b> trend-report format auto-detected and converted. Note: this export usually lacks Amps/Freq, so some cases (e.g. broken shaft, gas lock) cannot be confirmed without them.",
     trip_by_TM:"trip by TM (Tm reached limit)", trip_overload:"overload", trip_underload:"underload", trip_over_or_under:"overload or underload",
     footTpl:"esp-diagnosa · catalog v{v} ({u}) · logic read from signatures.json" },
   id:{ title:"ESP Diagnosa", sub:"fault-signature analyzer · artificial lift",
@@ -283,6 +285,8 @@ const T={
     noteFreq:"Frekuensi berubah {d}% dalam jendela — parameter <b>dinormalisasi terhadap Hz</b> (affinity law) sebelum dinilai. Tile bertanda tren ternormalisasi.",
     noteFrozen:"Sensor <b>{c}</b> tampak beku/flat (nyaris tanpa variasi) — kemungkinan tidak berfungsi; tidak dipakai sebagai bukti.",
     noNotes:"Tidak ada catatan khusus.",
+    starviewFail:"Format Starview terdeteksi tapi gagal diurai (baris nama trend tidak ditemukan).",
+    noteStarview:"Format laporan tren <b>Starview</b> terdeteksi & dikonversi otomatis. Catatan: export ini biasanya tanpa Amps/Freq, jadi beberapa case (mis. broken shaft, gas lock) tidak bisa dikonfirmasi tanpanya.",
     trip_by_TM:"trip by TM (Tm menyentuh limit)", trip_overload:"overload", trip_underload:"underload", trip_over_or_under:"overload atau underload",
     footTpl:"esp-diagnosa · katalog v{v} ({u}) · logika dibaca dari signatures.json" }
 };
@@ -338,6 +342,7 @@ function toLevel(d){const th=CFG.trendThresholds;
 const norm=s=>s.toLowerCase().replace(/[^a-z0-9]/g,'');
 function canon(h){
   const n=norm(h.replace(/\(.*?\)/g,' '));
+  if((CFG.aliasBlocklist||[]).some(bad=>n.includes(bad))) return null;  // tolak mis. "current leakage"
   if(CFG.aliases[n]) return CFG.aliases[n];
   let best=null,bl=0;
   for(const k in CFG.aliases){ if(k.length>=4 && n.includes(k) && k.length>bl){best=CFG.aliases[k];bl=k.length;} }
@@ -477,8 +482,37 @@ function drawChart(series){
         y:{ticks:{color:'#5C6F7E',callback:v=>v+'%',font:{size:10}},grid:{color:'rgba(38,56,74,.4)'}}}}});
 }
 
+/* ---------- Format detection & parsing ---------- */
+function isStarview(text){
+  const head=text.slice(0,800).toLowerCase();
+  if(head.includes('starview')) return true;
+  return /trend\s*1[\s\S]{0,200}trend\s*2/i.test(text.slice(0,1500)); // "Trend 1 ... Trend 2" block header
+}
+function parseStarview(text){
+  const g=Papa.parse(text.trim(),{header:false,skipEmptyLines:true});
+  const rows=g.data;
+  let tn=-1;
+  for(let i=0;i<Math.min(rows.length,10);i++){
+    if(rows[i].some(c=>/^\s*trend\s*1\s*$/i.test((c||'').trim()))){ tn=i; break; }
+  }
+  if(tn<0) throw new Error(t('starviewFail'));
+  const nameRow=rows[tn], nblocks=Math.floor(nameRow.length/3), names=[];
+  for(let b=0;b<nblocks;b++) names.push((nameRow[b*3+2]||'').replace(/"/g,'').trim());
+  const keep=[], fields=['Reading Time'];
+  names.forEach((nm,b)=>{ const c=canon(nm); if(c && !keep.some(k=>k.c===c)){ keep.push({b,c}); fields.push(c); } });
+  if(keep.length<2) throw new Error(t('noCols'));
+  const dataStart=tn+2, out=[];              // +2 melewati baris subheader Date,Time,Value
+  for(let i=dataStart;i<rows.length;i++){
+    const r=rows[i]; if(!r||!(r[0]||'').trim()) continue;
+    const o={'Reading Time':(r[0]||'').trim()+' '+(r[1]||'').trim()};
+    keep.forEach(({b,c})=>{ o[c]=(r[b*3+2]||'').trim(); });
+    out.push(o);
+  }
+  return {data:out, fields};
+}
+
 /* ---------- CSV pipeline ---------- */
-function analyzeCSV(rows,fields){
+function analyzeCSV(rows,fields,fmt){
   const colMap={}; let timeCol=null;
   fields.forEach(f=>{ const c=canon(f); if(c) colMap[f]=c; if(/time|date|tanggal|waktu/i.test(f)) timeCol=f; });
   const series={}, times=[], canonCols={};
@@ -540,6 +574,7 @@ function analyzeCSV(rows,fields){
       src:()=>`${t('diagnosis')} · ${idx.length} ${t('activePoints')}${spanStr}`,
       missingKey,
       extra:()=>{ const a=[];
+        if(fmt==='starview') a.push(t('noteStarview'));
         if(doNorm) a.push(t('noteFreq').replace('{d}',(freqDelta>0?'+':'')+freqDelta));
         frozen.forEach(c=>a.push(t('noteFrozen').replace('{c}',c))); return a; },
       series:(labels.length?{labels,data:chartData}:null)
@@ -604,15 +639,24 @@ fileInput.addEventListener('change',e=>{ const f=e.target.files[0]; if(f) handle
 function handleFile(f){
   const err=document.getElementById('csvErr'); err.classList.add('hidden');
   if(!CFG){ err.textContent=t('catalogNotLoaded'); err.classList.remove('hidden'); return; }
-  Papa.parse(f,{header:true, dynamicTyping:false, skipEmptyLines:true,
-    complete:res=>{ try{
-        if(!res.data.length) throw new Error(t('csvEmpty'));
-        const {obs,obsPace,meta}=analyzeCSV(res.data,res.meta.fields);
-        if(Object.keys(obs).length<2) throw new Error(t('noCols'));
-        render(obs,obsPace,meta);
-      }catch(e){ err.textContent='⚠ '+e.message; err.classList.remove('hidden'); } },
-    error:e=>{ err.textContent='⚠ '+t('readFail')+e.message; err.classList.remove('hidden'); }
-  });
+  const reader=new FileReader();
+  reader.onerror=()=>{ err.textContent='⚠ '+t('readFail'); err.classList.remove('hidden'); };
+  reader.onload=()=>{
+    try{
+      const text=reader.result;
+      let parsed, fmt;
+      if(isStarview(text)){ fmt='starview'; parsed=parseStarview(text); }
+      else{ fmt='flat';
+        const r=Papa.parse(text.trim(),{header:true,skipEmptyLines:true,dynamicTyping:false});
+        parsed={data:r.data,fields:r.meta.fields};
+      }
+      if(!parsed.data.length) throw new Error(t('csvEmpty'));
+      const {obs,obsPace,meta}=analyzeCSV(parsed.data,parsed.fields,fmt);
+      if(Object.keys(obs).length<2) throw new Error(t('noCols'));
+      render(obs,obsPace,meta);
+    }catch(e){ err.textContent='⚠ '+e.message; err.classList.remove('hidden'); }
+  };
+  reader.readAsText(f);
 }
 
 /* init language from storage or browser */
