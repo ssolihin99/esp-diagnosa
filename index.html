@@ -372,9 +372,13 @@ const norm=s=>s.toLowerCase().replace(/[^a-z0-9]/g,'');
 function canon(h){
   const n=norm(h.replace(/\(.*?\)/g,' '));
   if((CFG.aliasBlocklist||[]).some(bad=>n.includes(bad))) return null;  // tolak mis. "current leakage"
-  if(CFG.aliases[n]) return CFG.aliases[n];
+  const raw=h.toLowerCase();
+  const isTemp=/temp|winding|degf|degc/.test(raw), isPress=/pressure|psi/.test(raw);
+  const PRESS={Pi:1,Pd:1,dP:1,THP:1,CHP:1}, TEMP={Ti:1,Tm:1};
+  const ok=tgt=>!( (isTemp&&PRESS[tgt]) || (isPress&&TEMP[tgt]) );
+  if(CFG.aliases[n] && ok(CFG.aliases[n])) return CFG.aliases[n];
   let best=null,bl=0;
-  for(const k in CFG.aliases){ if(k.length>=4 && n.includes(k) && k.length>bl){best=CFG.aliases[k];bl=k.length;} }
+  for(const k in CFG.aliases){ if(k.length>=4 && n.includes(k) && k.length>bl && ok(CFG.aliases[k])){best=CFG.aliases[k];bl=k.length;} }
   return best;
 }
 function signalOf(vals){
