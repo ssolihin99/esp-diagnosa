@@ -364,6 +364,8 @@ function applyLang(){
 
 /* ---------- Helpers / engine (validated) ---------- */
 const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
+const minOf=a=>{let m=Infinity;for(let i=0;i<a.length;i++) if(a[i]<m)m=a[i]; return m;};
+const maxOf=a=>{let m=-Infinity;for(let i=0;i<a.length;i++) if(a[i]>m)m=a[i]; return m;};
 const std=a=>{const m=avg(a);return Math.sqrt(avg(a.map(x=>(x-m)**2)))};
 function toLevel(d){const th=CFG.trendThresholds;
   if(d>th.sharpUp)return 3; if(d>th.up)return 2; if(d>th.mildUp)return 1;
@@ -513,7 +515,7 @@ function drawChart(series){
     Ti:'#E58F7B',THP:'#6FA8DC',CHP:'#C6A0F6',Vib:'#E6C34F',Freq:'#7FD1B9'};
   const palette=['#4FB0C6','#E5544B','#F2A93B','#3FB6A8','#B98CE6','#89C24F','#E58F7B','#6FA8DC','#C6A0F6','#E6C34F']; let ci=0;
   const ds=Object.entries(series.data).map(([k,v])=>{
-    const f=v.filter(x=>x===x), mn=Math.min(...f), mx=Math.max(...f), rng=(mx-mn)||1;
+    const f=v.filter(x=>x===x), mn=minOf(f), mx=maxOf(f), rng=(mx-mn)||1;
     const color=fixed[k]||palette[ci++%palette.length];
     return {label:k, data:v.map(x=>x===x?(x-mn)/rng*100:null), _raw:v, borderColor:color,
       backgroundColor:color, borderWidth:1.5, pointRadius:0, pointHoverRadius:3, tension:.2, spanGaps:true};
@@ -615,7 +617,15 @@ function analyzeCSV(rows,fields,fmt){
   const colMap={}; let timeCol=null;
   fields.forEach(f=>{ const c=canon(f); if(c) colMap[f]=c; if(/time|date|tanggal|waktu/i.test(f)) timeCol=f; });
   const series={}, times=[], canonCols={};
-  Object.entries(colMap).forEach(([raw,c])=>canonCols[c]=raw);
+  // Bila beberapa kolom memetakan ke parameter sama, pilih yang paling banyak berisi data nyata (bukan kolom sentinel-0).
+  const cand={}; Object.entries(colMap).forEach(([raw,c])=>{ (cand[c]=cand[c]||[]).push(raw); });
+  const dataScore=raw=>{ let s=0; for(let i=0;i<rows.length;i++){ const v=parseFloat(rows[i][raw]); if(!isNaN(v) && v!==0) s++; } return s; };
+  for(const c in cand){
+    if(cand[c].length===1){ canonCols[c]=cand[c][0]; continue; }
+    let best=cand[c][0], bs=-1;
+    cand[c].forEach(raw=>{ const s=dataScore(raw); if(s>bs){ bs=s; best=raw; } });
+    canonCols[c]=best;
+  }
   rows.forEach(r=>{ if(timeCol){ const d=new Date(r[timeCol]); times.push(isNaN(d)?null:d); } });
   for(const c in canonCols) series[c]=rows.map(r=>{ const v=parseFloat(r[canonCols[c]]); return isNaN(v)?NaN:v; });
   if(series.Pd && series.Pi && !series.dP)
