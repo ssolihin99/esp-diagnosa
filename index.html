@@ -785,8 +785,8 @@ const watermarkPlugin={
     ctx.font='12px "JetBrains Mono", monospace';
     ctx.fillStyle='#8A9BA8';
     ctx.textAlign='right';
-    ctx.textBaseline='top';
-    ctx.fillText(text, width-12, 12);
+    ctx.textBaseline='bottom';
+    ctx.fillText(text, width-12, height-22);
     ctx.restore();
   }
 };
