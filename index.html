@@ -274,6 +274,8 @@ const T={
     noteManual:"Manually supplied (not from CSV): <b>{p}</b>. CSV-derived parameters are unchanged.",
     starviewFail:"Starview format detected but could not be parsed (trend-name row not found).",
     noteStarview:"<b>Starview</b> trend-report format auto-detected and converted. Note: this export usually lacks Amps/Freq, so some cases (e.g. broken shaft, gas lock) cannot be confirmed without them.",
+    instructFail:"Instruct/Phoenix datalog detected but the header row (Date/Time, Pi, Pd…) could not be located.",
+    noteInstruct:"<b>Instruct/Phoenix</b> downhole-gauge datalog auto-detected: banner, blank and unit rows skipped, columns mapped (Pi/Pd/Ti/Tm/vibration). Note: this gauge export has no Amps/Freq/Q, so cases relying on those (e.g. broken shaft, gas lock, wear vs blockage via Amps character) cannot be confirmed.",
     trip_by_TM:"trip by TM (Tm reached limit)", trip_overload:"overload", trip_underload:"underload", trip_over_or_under:"overload or underload",
     footTpl:"esp-diagnosa · catalog v{v} ({u}) · logic read from signatures.json" },
   id:{ title:"ESP Diagnosa", sub:"fault-signature analyzer · artificial lift",
@@ -315,6 +317,8 @@ const T={
     noteManual:"Dilengkapi manual (bukan dari CSV): <b>{p}</b>. Parameter dari CSV tidak berubah.",
     starviewFail:"Format Starview terdeteksi tapi gagal diurai (baris nama trend tidak ditemukan).",
     noteStarview:"Format laporan tren <b>Starview</b> terdeteksi & dikonversi otomatis. Catatan: export ini biasanya tanpa Amps/Freq, jadi beberapa case (mis. broken shaft, gas lock) tidak bisa dikonfirmasi tanpanya.",
+    instructFail:"Datalog Instruct/Phoenix terdeteksi tapi baris header (Date/Time, Pi, Pd…) tidak ditemukan.",
+    noteInstruct:"Datalog gauge downhole <b>Instruct/Phoenix</b> terdeteksi otomatis: baris banner, kosong, dan satuan dilewati, kolom dipetakan (Pi/Pd/Ti/Tm/vibrasi). Catatan: export gauge ini tanpa Amps/Freq/Q, jadi case yang bergantung padanya (mis. broken shaft, gas lock, wear vs blockage lewat karakter Amps) tidak bisa dikonfirmasi.",
     trip_by_TM:"trip by TM (Tm menyentuh limit)", trip_overload:"overload", trip_underload:"underload", trip_over_or_under:"overload atau underload",
     footTpl:"esp-diagnosa · katalog v{v} ({u}) · logika dibaca dari signatures.json" }
 };
@@ -613,6 +617,56 @@ function parseStarview(text){
   return {data:out, fields};
 }
 
+/* ---------- Instruct / Phoenix downhole-gauge datalog ---------- */
+// Format: baris1 banner ("Well Name…, Downloaded…, Version 2.xx"), baris2 kosong,
+// baris3 header (Date/Time,Pi,Pd,Ti,Tm,Vx,Vz,…), baris4 satuan (Psi,Deg F,…), lalu data.
+function isInstruct(text){
+  const head=text.slice(0,400).toLowerCase();
+  return /downloaded/.test(head) && /version\s*\d/.test(head);   // tanda-tangan banner Instruct/Phoenix
+}
+function instructISO(s){ // "26/08/2025 19:04" (dd/mm/yyyy) -> ISO agar Date() valid utk temporal gating
+  const m=String(s).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if(!m) return String(s).trim();
+  return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}T${m[4].padStart(2,'0')}:${m[5]}:${m[6]||'00'}`;
+}
+function parseInstruct(text){
+  const g=Papa.parse(text.replace(/\r/g,'').trim(),{header:false,skipEmptyLines:true});
+  const rows=g.data;
+  // cari baris header: mengandung "date/time" + "pi" + "pd"
+  let hn=-1;
+  for(let i=0;i<Math.min(rows.length,20);i++){
+    const cells=(rows[i]||[]).map(c=>(c||'').trim().toLowerCase());
+    if(cells.includes('date/time') && cells.includes('pi') && cells.includes('pd')){ hn=i; break; }
+  }
+  if(hn<0) throw new Error(t('instructFail'));
+  const rawHeader=(rows[hn]||[]).map(c=>(c||'').trim());
+  // lewati baris satuan tepat di bawah header bila terdeteksi (Psi/Deg F/dd-mm-yyyy…)
+  let dataStart=hn+1;
+  const below=((rows[hn+1]||[]).join(',')).toLowerCase();
+  if(/\bpsi\b|deg\s*f|deg\s*c|dd-mm-yyyy|hh:mm/.test(below)) dataStart=hn+2;
+  // kode Phoenix -> nama yang dikenali canon() (buang duplikat *2 & kolom nol seperti RPM/WcS)
+  const RENAME={ 'date/time':'Reading Time',
+    'pi':'Intake Pressure','pd':'Discharge Pressure',
+    'ti':'Intake Temperature','tm':'Motor Temperature',
+    'vx':'Vibration X','vz':'Vibration Z' };
+  const fields=[], keep=[]; // keep: {idx, name, isTime}
+  rawHeader.forEach((h,ci)=>{ const key=h.toLowerCase();
+    if(RENAME[key] && !fields.includes(RENAME[key])){ const nm=RENAME[key];
+      fields.push(nm); keep.push({idx:ci,name:nm,isTime:key==='date/time'}); } });
+  if(fields.length<2) throw new Error(t('noCols'));
+  // cap ke ~20k titik (stride seragam menjaga bentuk tren) agar tetap ringan di browser
+  const total=rows.length-dataStart;
+  const stride=total>20000?Math.ceil(total/20000):1;
+  const out=[];
+  for(let i=dataStart;i<rows.length;i+=stride){
+    const r=rows[i]; if(!r||!(r[0]||'').trim()) continue;
+    const o={};
+    keep.forEach(k=>{ const v=(r[k.idx]||'').trim(); o[k.name]=k.isTime?instructISO(v):v; });
+    out.push(o);
+  }
+  return {data:out, fields};
+}
+
 /* ---------- CSV pipeline ---------- */
 function analyzeCSV(rows,fields,fmt){
   const colMap={}; let timeCol=null;
@@ -690,6 +744,7 @@ function analyzeCSV(rows,fields,fmt){
       missingKey,
       extra:()=>{ const a=[];
         if(fmt==='starview') a.push(t('noteStarview'));
+        if(fmt==='instruct') a.push(t('noteInstruct'));
         if(doNorm) a.push(t('noteFreq').replace('{d}',(freqDelta>0?'+':'')+freqDelta));
         frozen.forEach(c=>a.push(t('noteFrozen').replace('{c}',c))); return a; },
       series:(Object.keys(chartData).length?{labels,data:chartData}:null)
@@ -761,6 +816,7 @@ function handleFile(f){
       const text=reader.result;
       let parsed, fmt;
       if(isStarview(text)){ fmt='starview'; parsed=parseStarview(text); }
+      else if(isInstruct(text)){ fmt='instruct'; parsed=parseInstruct(text); }
       else{ fmt='flat';
         const r=Papa.parse(text.trim(),{header:true,skipEmptyLines:true,dynamicTyping:false});
         parsed={data:r.data,fields:r.meta.fields};
