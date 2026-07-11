@@ -523,6 +523,7 @@ function drawChart(series){
   chart=new Chart(ctx,{type:'line', data:{labels:series.labels, datasets:ds},
     options:{responsive:true, animation:false, interaction:{mode:'index',intersect:false},
       plugins:{
+        watermark:{},
         legend:{labels:{color:'#8A9BA8',font:{family:'JetBrains Mono',size:11},usePointStyle:true,boxWidth:8}},
         tooltip:{enabled:true, backgroundColor:'#1D2C3A', borderColor:'#324A61', borderWidth:1,
           titleColor:'#E6EDF3', bodyColor:'#E6EDF3', titleFont:{family:'JetBrains Mono',size:11}, bodyFont:{family:'JetBrains Mono',size:11},
@@ -774,9 +775,28 @@ function handleFile(f){
   reader.readAsText(f);
 }
 
+/* ========== Watermark Plugin untuk Chart.js ========== */
+const watermarkPlugin={
+  id:'watermark',
+  afterDraw(chart){
+    const {ctx, width, height}=chart; const text='ssolihin99@gmail.com';
+    ctx.save();
+    ctx.globalAlpha=0.12;
+    ctx.font='12px "JetBrains Mono", monospace';
+    ctx.fillStyle='#8A9BA8';
+    ctx.textAlign='right';
+    ctx.textBaseline='bottom';
+    ctx.fillText(text, width-12, height-8);
+    ctx.restore();
+  }
+};
+
 /* register zoom plugin (UMD auto-registers, but be safe) */
 try{ const zp=window.ChartZoom||window.chartjsPluginZoom||window['chartjs-plugin-zoom'];
   if(zp && window.Chart && Chart.register) Chart.register(zp.default||zp); }catch(e){}
+
+/* register watermark plugin */
+try{ if(window.Chart && Chart.register) Chart.register(watermarkPlugin); }catch(e){}
 document.getElementById('chartReset').addEventListener('click',()=>{ if(chart&&chart.resetZoom) chart.resetZoom(); });
 
 /* init language from storage or browser */
