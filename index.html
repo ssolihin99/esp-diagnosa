@@ -118,6 +118,32 @@ canvas{margin-top:8px}
 .foot{color:var(--faint); font-size:11px; font-family:var(--mono); text-align:center; margin-top:34px}
 .hidden{display:none}
 @media(max-width:560px){ .diag-name{font-size:20px} .cand .cnm{min-width:120px} h1{font-size:19px} }
+
+/* ---------- feedback: tombol + modal ---------- */
+.fb-fab{position:fixed;left:18px;bottom:16px;z-index:60;font-family:var(--disp);font-weight:600;
+  font-size:13.5px;background:var(--amber);color:#10202b;border:0;border-radius:9px;padding:11px 18px;
+  cursor:pointer;box-shadow:var(--shadow)}
+.fb-fab:hover{filter:brightness(1.06)}
+.fb-fab:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.fb-overlay{position:fixed;inset:0;z-index:100;background:rgba(8,14,20,.72);display:flex;
+  align-items:center;justify-content:center;padding:20px}
+.fb-modal{width:100%;max-width:460px;background:linear-gradient(180deg,var(--panel),var(--bg2));
+  border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:var(--shadow)}
+.fb-modal h3{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:-.01em;margin:0}
+.fb-sub{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin:3px 0 16px}
+.fb-field{margin-bottom:12px}
+.fb-field label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.fb-req{color:var(--amber)}
+.fb-field input,.fb-field select,.fb-field textarea{width:100%;background:var(--panel2);
+  border:1px solid var(--line);color:var(--ink);font-family:var(--body);font-size:14px;
+  border-radius:8px;padding:9px 11px}
+.fb-field textarea{min-height:92px;resize:vertical}
+.fb-field input:focus,.fb-field select:focus,.fb-field textarea:focus{outline:none;border-color:var(--amber)}
+.fb-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+.fb-msg{font-family:var(--mono);font-size:12.5px;min-height:20px;margin-top:10px}
+.fb-msg.ok{color:var(--teal)} .fb-msg.err{color:var(--crit)}
+.fb-modal select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238A9BA8' fill='none' stroke-width='1.4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center}
 </style>
 </head>
 <body>
@@ -228,6 +254,45 @@ canvas{margin-top:8px}
   <div class="foot" id="foot">—</div>
 </div>
 
+<!-- feedback: tombol + modal -->
+<button class="fb-fab" id="fbOpen">✉ Kirim Masukan</button>
+<div class="fb-overlay hidden" id="fbOverlay">
+  <div class="fb-modal" role="dialog" aria-modal="true" aria-labelledby="fbTitle">
+    <div style="display:flex;align-items:flex-start;gap:10px">
+      <div style="flex:1">
+        <h3 id="fbTitle">Kirim Masukan</h3>
+        <div class="fb-sub" id="fbSub">Laporkan bug atau usulkan fitur — semua kolom wajib.</div>
+      </div>
+      <button class="btn btn-ghost" id="fbClose" style="padding:4px 10px" aria-label="Tutup">✕</button>
+    </div>
+    <div class="fb-field">
+      <label><span id="fbNamaL">Nama</span> <span class="fb-req">*</span></label>
+      <input type="text" id="fbNama" maxlength="80" autocomplete="name">
+    </div>
+    <div class="fb-field">
+      <label><span id="fbEmailL">Email</span> <span class="fb-req">*</span></label>
+      <input type="email" id="fbEmail" maxlength="120" autocomplete="email">
+    </div>
+    <div class="fb-field">
+      <label><span id="fbKatL">Kategori</span> <span class="fb-req">*</span></label>
+      <select id="fbKategori">
+        <option value="Bug" id="fbKatBug">Bug</option>
+        <option value="Saran" id="fbKatSaran">Saran</option>
+        <option value="Lainnya" id="fbKatLain">Lainnya</option>
+      </select>
+    </div>
+    <div class="fb-field">
+      <label><span id="fbPesanL">Pesan</span> <span class="fb-req">*</span></label>
+      <textarea id="fbPesan" maxlength="2000"></textarea>
+    </div>
+    <div class="fb-actions">
+      <button class="btn btn-ghost" id="fbCancel">Batal</button>
+      <button class="btn btn-primary" id="fbSend">Kirim</button>
+    </div>
+    <div class="fb-msg" id="fbMsg"></div>
+  </div>
+</div>
+
 <script>
 "use strict";
 let CFG=null, chart=null, LANG='en', LAST=null, CSVSTATE=null, MANUAL_SUPP={};
@@ -277,6 +342,14 @@ const T={
     instructFail:"Instruct/Phoenix datalog detected but the header row (Date/Time, Pi, Pd…) could not be located.",
     noteInstruct:"<b>Instruct/Phoenix</b> downhole-gauge datalog auto-detected: banner, blank and unit rows skipped, columns mapped (Pi/Pd/Ti/Tm/vibration). Note: this gauge export has no Amps/Freq/Q, so cases relying on those (e.g. broken shaft, gas lock, wear vs blockage via Amps character) cannot be confirmed.",
     trip_by_TM:"trip by TM (Tm reached limit)", trip_overload:"overload", trip_underload:"underload", trip_over_or_under:"overload or underload",
+    fbOpen:"✉ Send Feedback", fbTitle:"Send Feedback",
+    fbSub:"Report a bug or suggest a feature — all fields required.",
+    fbNama:"Name", fbEmail:"Email", fbKat:"Category", fbPesan:"Message",
+    fbKatBug:"Bug", fbKatSaran:"Suggestion", fbKatLain:"Other",
+    fbCancel:"Cancel", fbSend:"Send", fbSending:"Sending…",
+    fbOkMsg:"Message sent. Thank you!",
+    fbErrRequired:"All fields are required.", fbErrEmail:"Invalid email format.",
+    fbErrNet:"Failed to send. Check your connection and try again.",
     footTpl:"esp-diagnosa · catalog v{v} ({u}) · logic read from signatures.json" },
   id:{ title:"ESP Diagnosa", sub:"fault-signature analyzer · artificial lift",
     tabcsv:"Unggah CSV", tabmanual:"Input Tren Manual",
@@ -320,6 +393,14 @@ const T={
     instructFail:"Datalog Instruct/Phoenix terdeteksi tapi baris header (Date/Time, Pi, Pd…) tidak ditemukan.",
     noteInstruct:"Datalog gauge downhole <b>Instruct/Phoenix</b> terdeteksi otomatis: baris banner, kosong, dan satuan dilewati, kolom dipetakan (Pi/Pd/Ti/Tm/vibrasi). Catatan: export gauge ini tanpa Amps/Freq/Q, jadi case yang bergantung padanya (mis. broken shaft, gas lock, wear vs blockage lewat karakter Amps) tidak bisa dikonfirmasi.",
     trip_by_TM:"trip by TM (Tm menyentuh limit)", trip_overload:"overload", trip_underload:"underload", trip_over_or_under:"overload atau underload",
+    fbOpen:"✉ Kirim Masukan", fbTitle:"Kirim Masukan",
+    fbSub:"Laporkan bug atau usulkan fitur — semua kolom wajib.",
+    fbNama:"Nama", fbEmail:"Email", fbKat:"Kategori", fbPesan:"Pesan",
+    fbKatBug:"Bug", fbKatSaran:"Saran", fbKatLain:"Lainnya",
+    fbCancel:"Batal", fbSend:"Kirim", fbSending:"Mengirim…",
+    fbOkMsg:"Pesan terkirim. Terima kasih!",
+    fbErrRequired:"Semua kolom wajib diisi.", fbErrEmail:"Format email tidak valid.",
+    fbErrNet:"Gagal mengirim. Cek koneksi lalu coba lagi.",
     footTpl:"esp-diagnosa · katalog v{v} ({u}) · logika dibaca dari signatures.json" }
 };
 const t=k=>T[LANG][k]??k;
@@ -358,6 +439,7 @@ function applyLang(){
   set('t-interphead','interphead'); set('t-recohead','recohead'); set('t-noteshead','noteshead'); set('t-charthead','charthead');
   set('t-charthint','charthint'); set('chartReset','resetZoom');
   document.querySelectorAll('#langToggle button').forEach(b=>b.classList.toggle('on',b.dataset.lang===LANG));
+  applyFbLang();
   if(CFG){
     document.getElementById('status').innerHTML=`${t('catalog')} <b>v${CFG.version}</b> · ${CFG.signatures.length} ${t('cases')} · ${CFG.updated}`;
     document.getElementById('foot').textContent=t('footTpl').replace('{v}',CFG.version).replace('{u}',CFG.updated);
@@ -830,6 +912,47 @@ function handleFile(f){
   };
   reader.readAsText(f);
 }
+
+/* ---------- feedback modal ---------- */
+const FEEDBACK_URL='https://script.google.com/macros/s/AKfycbz36Z1ow1vr_4DU41UlIVHxpR1dsu9qeMG_FEx_-7LQgrWLPaCiElbNlnYVcsY3wERd/exec';
+const APP_ID='esp-diagnosa';   // penanda sumber — beda per aplikasi ESP
+function applyFbLang(){
+  const set=(id,key)=>{const el=document.getElementById(id); if(el) el.textContent=t(key);};
+  set('fbOpen','fbOpen'); set('fbTitle','fbTitle'); set('fbSub','fbSub');
+  set('fbNamaL','fbNama'); set('fbEmailL','fbEmail'); set('fbKatL','fbKat'); set('fbPesanL','fbPesan');
+  set('fbKatBug','fbKatBug'); set('fbKatSaran','fbKatSaran'); set('fbKatLain','fbKatLain');
+  set('fbCancel','fbCancel'); set('fbSend','fbSend');
+}
+(function initFeedback(){
+  const $=id=>document.getElementById(id);
+  const emailOk=s=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+  const setMsg=(txt,cls)=>{const m=$('fbMsg'); m.textContent=txt; m.className='fb-msg'+(cls?' '+cls:'');};
+  const show=()=>{$('fbOverlay').classList.remove('hidden'); setMsg(''); setTimeout(()=>$('fbNama').focus(),40);};
+  const hide=()=>$('fbOverlay').classList.add('hidden');
+  $('fbOpen').addEventListener('click',show);
+  $('fbClose').addEventListener('click',hide);
+  $('fbCancel').addEventListener('click',hide);
+  $('fbOverlay').addEventListener('click',e=>{ if(e.target===$('fbOverlay')) hide(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !$('fbOverlay').classList.contains('hidden')) hide(); });
+  $('fbSend').addEventListener('click',async()=>{
+    const nama=$('fbNama').value.trim(), email=$('fbEmail').value.trim(),
+          kategori=$('fbKategori').value, pesan=$('fbPesan').value.trim();
+    if(!nama||!email||!kategori||!pesan) return setMsg(t('fbErrRequired'),'err');
+    if(!emailOk(email)) return setMsg(t('fbErrEmail'),'err');
+    $('fbSend').disabled=true; setMsg(t('fbSending'),'');
+    try{
+      const res=await fetch(FEEDBACK_URL,{method:'POST',
+        body:JSON.stringify({sumber:APP_ID,nama,email,kategori,pesan})});
+      const data=await res.json();
+      if(data.status==='success'){
+        setMsg(t('fbOkMsg'),'ok');
+        $('fbNama').value=$('fbEmail').value=$('fbPesan').value=''; $('fbKategori').selectedIndex=0;
+        setTimeout(hide,1400);
+      } else setMsg(data.message||t('fbErrNet'),'err');
+    }catch(_){ setMsg(t('fbErrNet'),'err'); }
+    finally{ $('fbSend').disabled=false; }
+  });
+})();
 
 /* ========== Watermark Plugin untuk Chart.js ========== */
 const watermarkPlugin={
